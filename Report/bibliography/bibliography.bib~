@@ -1,0 +1,78 @@
+%% Civil violence
+@article{sambanis2001ethnic,
+  title={Do ethnic and nonethnic civil wars have the same causes? A theoretical and empirical inquiry (Part 1)},
+  author={Sambanis, Nicholas},
+  journal={Journal of Conflict Resolution},
+  volume={45},
+  number={3},
+  pages={259--282},
+  year={2001},
+  publisher={Sage Publications}
+}
+@article{myerson1991game,
+  title={Game theory: analysis of conflict},
+  author={Myerson, Roger B},
+  journal={Harvard University},
+  year={1991}
+}
+@article{gulden2002spatial,
+  title={Spatial and temporal patterns in civil violence: Guatemala, 1977-1986},
+  author={Gulden, Timothy R},
+  journal={Politics and the Life Sciences},
+  pages={26--36},
+  year={2002},
+  publisher={JSTOR}
+}
+@inproceedings{goh2006modeling,
+  title={Modeling civil violence: An evolutionary multi-agent, game theoretic approach},
+  author={Goh, Chi Keong and Quek, HY and Tan, Kay Chen and Abbass, Hussein A},
+  booktitle={Evolutionary Computation, 2006. CEC 2006. IEEE Congress on},
+  pages={1624--1631},
+  year={2006},
+  organization={IEEE}
+}
+%% Learning and Experience
+@book{anderson2007mind,
+  title={How can the human mind occur in the physical universe?},
+  author={John R Anderson and Richard King},
+  year={2007},
+  publisher={Oxford University Press}
+}
+@article{nason2005soar,
+  title={Soar-RL: Integrating reinforcement learning with Soar},
+  author={Nason, Shelley and Laird, John E},
+  journal={Cognitive Systems Research},
+  volume={6},
+  number={1},
+  pages={51--59},
+  year={2005},
+  publisher={Elsevier}
+}
+@article{reagans2005individual,
+  title={Individual experience and experience working together: Predicting learning rates from knowing who knows what and knowing how to work together},
+  author={Reagans, Ray and Argote, Linda and Brooks, Daria},
+  journal={Management science},
+  volume={51},
+  number={6},
+  pages={869--881},
+  year={2005},
+  publisher={INFORMS}
+}
+@article{watkins1992q,
+  title={Q-learning},
+  author={Watkins, Christopher JCH and Dayan, Peter},
+  journal={Machine learning},
+  volume={8},
+  number={3-4},
+  pages={279--292},
+  year={1992},
+  publisher={Springer}
+}
+@inproceedings{claus1998dynamics,
+  title={The dynamics of reinforcement learning in cooperative multiagent systems},
+  author={Claus, Caroline and Boutilier, Craig},
+  booktitle={AAAI/IAAI},
+  pages={746--752},
+  year={1998}
+}
+

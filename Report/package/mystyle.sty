@@ -1,0 +1,32 @@
+\ProvidesPackage{mystyle}
+
+% Document style
+\usepackage[a4paper]{geometry}
+
+% Language
+\usepackage[english]{babel}
+%\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Figures and tables
+\usepackage[font=small,skip=10pt]{caption}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+% Figures and listings
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+
+\lstset{
+    language=Python,
+    breaklines=true,
+    showstringspaces=false,
+    numbers=left,
+    frame=single,
+    morekeywords={Do, While}
+}
+
+% Other
+\usepackage{natbib}
+\usepackage{hyperref}
