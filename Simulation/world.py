@@ -1,11 +1,13 @@
 # import numpy
 
-# Currently values are set at:
-# Goal = 100 (G in map)
-# Block = 10 (B in map)
-# Start = 0 (S in map)
-# Path = -1 (. in map)
-# Wall = -10 (# in map)
+""""
+Currently values are set at:
+Goal = 100 (G in map)
+Block = 10 (B in map)
+Start = 0 (S in map)
+Path = -1 (. in map)
+Wall = -10 (# in map)
+"""
 
 
 class World:
@@ -16,7 +18,9 @@ class World:
         self.walls = walls
         self.block = block
         self.start = start
-        self.map = [[-1 for x in range(self.width)] for y in range(self.height)]
+        self.map = [
+            [-1 for x in range(self.width)] for y in range(self.height)
+        ]
 
     def add_objects(self):
         for i in self.goals:
@@ -27,12 +31,10 @@ class World:
             self.map[i[0]][i[1]] = 0
         self.map[self.block[0]][self.block[1]] = 10
 
-
     def print_map(self):
-        print(end=" #")
-        for x in range(self.width): print("##", end="")
+        print("# "*(self.width+2))
         for x in self.map:
-            print("\n#", end=" ")
+            print("#", end=" ")
             for y in x:
                 if y == -10:
                     print("#", end=" ")
@@ -44,7 +46,5 @@ class World:
                     print("B", end=" ")
                 elif y == 100:
                     print("G", end=" ")
-            print("#", end="")
-        print(end="\n #")
-        for x in range(self.width): print("##", end="")
-
+            print("#")
+        print("# "*(self.width+2))

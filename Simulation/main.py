@@ -2,6 +2,9 @@ import world
 
 
 def make_world():
+    """
+    Create the world grid
+    """
     # The size of the world
     height = 10
     width = 10
@@ -10,7 +13,7 @@ def make_world():
     goals = [(0, 9), (9, 0)]
     walls = [(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)]
     block = (5, 5)
-    start = [(0,0),(9,9)]
+    start = [(0, 0), (9, 9)]
 
     # Create and print a new world
     new_world = world.World(height, width, goals, walls, block, start)
