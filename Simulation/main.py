@@ -12,7 +12,7 @@ def make_world():
     block = (5, 5)
     start = [(0,0),(9,9)]
 
-    #Create a new world
+    # Create and print a new world
     new_world = world.World(height, width, goals, walls, block, start)
     new_world.add_objects()
     new_world.print_map()
