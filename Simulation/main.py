@@ -19,4 +19,5 @@ def make_world():
 
     return new_world
 
-new_world = make_world()
+if __name__ == "__main__":
+    new_world = make_world()
