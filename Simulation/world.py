@@ -1,10 +1,11 @@
 # import numpy
 
 # Currently values are set at:
-# Goal = 100
-# Block = 10
-# Path = 0
-# Wall = -1
+# Goal = 100 (G in map)
+# Block = 10 (B in map)
+# Start = 0 (S in map)
+# Path = -1 (. in map)
+# Wall = -10 (# in map)
 
 
 class World:
