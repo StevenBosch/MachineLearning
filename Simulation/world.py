@@ -1,4 +1,4 @@
-# import numpy
+import numpy
 
 """"
 Currently values are set at:
