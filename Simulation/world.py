@@ -1,4 +1,5 @@
-""""
+""""Our World module.
+
 Currently values are set at:
 Goal = 100 (G in map)
 Block = 10 (B in map)
@@ -7,6 +8,7 @@ Path = -1 (. in map)
 Wall = -10 (# in map)
 """
 
+""" The possible states a world cell can have."""
 WorldStates = {
     "free": 0,
     "agent": 1,
@@ -14,8 +16,10 @@ WorldStates = {
     "block": 3
 }
 
+
 class World:
     def __init__(self, height, width, goals, walls, block, start):
+        """Initialize a new world with the given parameters."""
         self.height = height
         self.width = width
         self.goals = goals
@@ -23,10 +27,10 @@ class World:
         self.block = block
         self.start = start
         self.map = [
-            [WorldStates["free"] for x in range(self.width)] for y in range(self.height)
-        ]
+            [WorldStates["free"] for x in range(width)] for y in range(height)]
 
     def add_objects(self):
+        """Add the objects such as walls to the map."""
         for i in self.walls:
             self.map[i[0]][i[1]] = WorldStates["wall"]
         for i in self.start:
@@ -34,6 +38,7 @@ class World:
         self.map[self.block[0]][self.block[1]] = WorldStates["block"]
 
     def print_map(self):
+        """Print the current situation of the map."""
         print("# "*(self.width+2))
         for x in self.map:
             print("#", end=" ")
@@ -50,9 +55,3 @@ class World:
                     print("G", end=" ")
             print("#")
         print("# "*(self.width+2))
-
-    def getReward(self, state):
-        pass
-        
-                        
-

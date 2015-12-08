@@ -1,3 +1,4 @@
+"""Our agent module."""
 import numpy as np
 
 """ Our actions are interpreted as the following integer values: """
@@ -46,7 +47,7 @@ class Agent:
                 self.action = Actions[action]
 
     def findMaxQ(self, state):
-        """ Finds the maximum next q value, given the current state """
+        """Find the maximum next q value, given the current state."""
         nextQ = -np.inf
         for action in Actions:
             qValue = self.q[state[0], state[1], Actions[action], self.grasped]
