@@ -23,6 +23,7 @@ class Agent:
         self.action = 0
         self.newState = 0
         self.grasped = 0
+        self.reward = 0
 
     def chooseAction(self, tau):
         """ Chooses the best possible action, given a value of tau:
@@ -38,7 +39,7 @@ class Agent:
         total = sum(np.exp(self.q[self.state[0], self.state[1], :,
                            self.grasped]/tau))
         probs = single / total
-        print(np.cumsum(probs))
+        # print(np.cumsum(probs))
 
         for action in Actions:
             if sample <= np.cumsum(probs)[Actions[action]]:
@@ -52,7 +53,7 @@ class Agent:
             nextQ = max(qValue, nextQ)
             return nextQ
 
-    def updateQ(self, reward, alpha, gamma):
+    def updateQ(self, alpha, gamma):
         """ Updates a Q function:
             nextQ = Q[nextState][nextAction][obj];
             Q[state][action][obj] =
@@ -63,8 +64,8 @@ class Agent:
         nextState = self.nextState
 
         curQ = self.q[state[0], state[1], action, self.grasped]
-        nextQ = findMaxQ(nextState)
-        update = alpha * (reward + gamma * nextQ - curQ)
+        nextQ = self.findMaxQ(nextState)
+        update = alpha * (self.reward + gamma * nextQ - curQ)
         self.q[state[0], state[1], action, self.grasped] = curQ + update
 
     def print_q(self):
