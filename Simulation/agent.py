@@ -20,6 +20,7 @@ class Agent:
         self.q = np.zeros((height, width, len(Actions), 2))
 
         self.state = state
+        self.nextState = (0, 0)
         self.action = 0
         self.newState = 0
         self.grasped = 0
@@ -52,12 +53,16 @@ class Agent:
             nextQ = max(qValue, nextQ)
             return nextQ
 
-    def updateQ(self, state, action, reward, nextState, alpha, gamma):
+    def updateQ(self, reward, alpha, gamma):
         """ Updates a Q function:
             nextQ = Q[nextState][nextAction][obj];
             Q[state][action][obj] =
             curQ + ALPHA*(reward[obj] + GAMMA*nextQ - curQ);
         """
+        state = self.state
+        action = self.action
+        nextState = self.nextState
+
         curQ = self.q[state[0], state[1], action, self.grasped]
         nextQ = findMaxQ(nextState)
         update = alpha * (reward + gamma * nextQ - curQ)
