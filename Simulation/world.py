@@ -48,3 +48,6 @@ class World:
                     print("G", end=" ")
             print("#")
         print("# "*(self.width+2))
+
+    def getReward(self, state):
+        pass
