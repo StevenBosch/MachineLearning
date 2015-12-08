@@ -1,65 +1,69 @@
-import world
-import agent
+import world as w
+import agent as ag
 
-""" Our actions are interpreted as the following integer values: """
-Actions = {
-    "stay": 0,
-    "left": 1,
-    "up": 2,
-    "right": 3,
-    "down": 4,
-    "grab": 5
-}
-
-WorldStates = {
-    "free": 0,
-    "agent": 1,
-    "wall": 2,
-    "block": 3
-}
 
 def createAgents(numberOfAgents, start):
     agents = []    
     for i in range(numberOfAgents):
-        agents.append(agent.Agent(height*width, start[i], height, width))
+        agents.append(ag.Agent(height*width, start[i], height, width))
     return agents
 
 def chooseActions(agents, tau):
     for agent in agents:
         agent.chooseAction(tau)
 
-def updateWorld(agents, world):
-    # Update the world according to the actions chosen by the agents
-    for agent in agents:
-        x = agent.state[0]
-        y = agent.state[1]
-        if agent.action == Actions["left"]:
-            if not x == 0:
-                if world.map[x-1][y] == WorldStates["free"]:
-                    world.map[x][y] = WorldStates["free"]
-                    x = x - 1
-        if agent.action == Actions["right"]:
-            if not x == world.width - 1:
-                if world.map[x+1][y] == WorldStates["free"]:
-                    world.map[x][y] = WorldStates["free"]
-                    x = x + 1       
-        if agent.action == Actions["up"]:
-            if not y == 0:
-                if world.map[x][y-1] == WorldStates["free"]:
-                    world.map[x][y] = WorldStates["free"]
-                    y = y - 1 
-        if agent.action == Actions["down"]:
-            if not x == world.height - 1:
-                if world.map[x][y+1] == WorldStates["free"]:
-                    world.map[x][y] = WorldStates["free"] 
-                    y = y + 1                         
-        if agent.action == Actions["grab"]:
-            if nextToBlock(agent, world):
-                agent.grasped = 1
+def moveAgent(agent, world):
+    reward = 0
+    x = agent.state[0]
+    y = agent.state[1]
+    if agent.action == ag.Actions["left"]:
+        if not x == 0:
+            if world.map[x-1][y] == w.WorldStates["free"]:
+                world.map[x][y] = w.WorldStates["free"]
+                x = x - 1
+    if agent.action == ag.Actions["right"]:
+        if not x == world.width - 1:
+            if world.map[x+1][y] == w.WorldStates["free"]:
+                world.map[x][y] = w.WorldStates["free"]
+                x = x + 1       
+    if agent.action == ag.Actions["up"]:
+        if not y == 0:
+            if world.map[x][y-1] == w.WorldStates["free"]:
+                world.map[x][y] = w.WorldStates["free"]
+                y = y - 1 
+    if agent.action == ag.Actions["down"]:
+        if not x == world.height - 1:
+            if world.map[x][y+1] == w.WorldStates["free"]:
+                world.map[x][y] = w.WorldStates["free"] 
+                y = y + 1                         
+    if agent.action == ag.Actions["grab"]:
+        if nextToBlock(agent, world):
+            agent.grasped = 1
+            reward = 1
 
-        world.map[x][y] = WorldStates["agent"]
-        agent.state = (x, y)
+    world.map[x][y] = WorldStates["agent"]
+    agent.state = (x, y)
+    
+    return reward
+
+def moveBlock(agents, world):
     pass
+        
+
+def updateWorld(agents, world):
+    # If not all agents have grabbed the block, move the single agents that have not grabbed. Else move the block.
+    allGrasped = True
+    sameAction = True
+    action = agents[0].action
+    for agent in agents:
+        if agent.grasped == 0:
+            agent.reward = moveAgent(agent, world)
+            allGrasped = False
+        elif agent.action != action:
+            sameAction = False
+    
+    if allGrasped == True and sameAction == True:
+        moveBlock(agents, world)
     
 def updateQValues(agents):
     for agent in agents:
@@ -80,7 +84,7 @@ if __name__ == "__main__":
     start = [(0, 0), (9, 9)]
 
     # Create world and everything in it
-    new_world = world.World(height, width, goals, walls, block, start)
+    new_world = w.World(height, width, goals, walls, block, start)
     new_world.add_objects()
     new_world.print_map()
     
@@ -90,7 +94,7 @@ if __name__ == "__main__":
     # Run the simulation a number of times
     for x in range(1000):
         chooseActions(agents, tau)
-        updateWorld(agents, world)
+        updateWorld(agents, new_world)
         updateQValues(agents)
 
         tau = tau * 0.999
