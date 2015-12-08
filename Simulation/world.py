@@ -16,7 +16,7 @@ WorldStates = {
     "block": 3
 }
 
-def nextToBlock(agent, world)
+def nextToBlock(agent, world):
 	if np.absolute(agent.state[0]-world.block[0]) == 1:
 		return True
 	elif np.absolute(agent.state[1]-world.block[1]) == 1:
