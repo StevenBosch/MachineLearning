@@ -13,8 +13,7 @@ WorldStates = {
     "free": 0,
     "agent": 1,
     "wall": 2,
-    "block": 3,
-    "goal": 4
+    "block": 3
 }
 
 class World:
@@ -26,17 +25,15 @@ class World:
         self.block = block
         self.start = start
         self.map = [
-            [Worldstates.free.value for x in range(self.width)] for y in range(self.height)
+            [WorldStates["free"] for x in range(self.width)] for y in range(self.height)
         ]
 
     def add_objects(self):
-        for i in self.goals:
-            self.map[i[0]][i[1]] = WorldStates.goal.value
         for i in self.walls:
-            self.map[i[0]][i[1]] = WorldStates.wall.value
+            self.map[i[0]][i[1]] = WorldStates["wall"]
         for i in self.start:
-            self.map[i[0]][i[1]] = WorldStates.agent.value
-        self.map[self.block[0]][self.block[1]] = Worldstates.block.value
+            self.map[i[0]][i[1]] = WorldStates["agent"]
+        self.map[self.block[0]][self.block[1]] = WorldStates["block"]
 
     def print_map(self):
         print("# "*(self.width+2))

@@ -7,8 +7,7 @@ Actions = {
     "up": 2,
     "right": 3,
     "down": 4,
-    "grab": 5,
-    "release": 6,
+    "grab": 5
 }
 
 
