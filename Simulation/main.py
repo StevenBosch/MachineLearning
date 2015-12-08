@@ -1,6 +1,23 @@
 import world
 import agent
 
+""" Our actions are interpreted as the following integer values: """
+Actions = {
+    "stay": 0,
+    "left": 1,
+    "up": 2,
+    "right": 3,
+    "down": 4,
+    "grab": 5
+}
+
+WorldStates = {
+    "free": 0,
+    "agent": 1,
+    "wall": 2,
+    "block": 3
+}
+
 def createAgents(numberOfAgents, start):
     agents = []    
     for i in range(numberOfAgents):
@@ -63,7 +80,7 @@ if __name__ == "__main__":
     start = [(0, 0), (9, 9)]
 
     # Create world and everything in it
-    new_world = world.World(height, width, walls, block, start)
+    new_world = world.World(height, width, goals, walls, block, start)
     new_world.add_objects()
     new_world.print_map()
     

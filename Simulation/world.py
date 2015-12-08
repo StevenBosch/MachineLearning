@@ -40,13 +40,13 @@ class World:
         for x in self.map:
             print("#", end=" ")
             for y in x:
-                if y == -10:
-                    print("#", end=" ")
-                elif y == -1:
+                if y == 0:
                     print(".", end=" ")
-                elif y == 0:
-                    print("S", end=" ")
-                elif y == 10:
+                elif y == 1:
+                    print("A", end=" ")
+                elif y == 2:
+                    print("#", end=" ")
+                elif y == 3:
                     print("B", end=" ")
                 elif y == 100:
                     print("G", end=" ")
