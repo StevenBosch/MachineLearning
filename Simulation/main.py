@@ -19,7 +19,7 @@ def checkAgentMove(world, x, y, action):
     if (action == ag.Actions["grab"] and not nextToBlock(x, y, world)):
             return False
     elif (action == ag.Actions["left"] and
-          (x == 0 or world.map[x+1][y] != w.WorldStates["free"])):
+          (x == 0 or world.map[x-1][y] != w.WorldStates["free"])):
             return False
     elif ((action == ag.Actions["right"]) and
           (x == world.width-1 or world.map[x+1][y] != w.WorldStates["free"])):
@@ -46,8 +46,7 @@ def moveAgent(agent, world):
             y = y - 1
         if agent.action == ag.Actions["down"]:
             y = y + 1
-        if agent.action == ag.Actions["grab"]:
-            print("grabbed it")
+        if agent.action == ag.Actions["grab"] and agent.grasped == 0:
             agent.grasped = 1
             agent.reward = 1
 
@@ -79,28 +78,32 @@ def moveBlock(agents, world):
     if agents[0].action == ag.Actions["left"]:
         if xblock == 0 or world.map[xblock-1][yblock] == w.WorldStates["wall"]:
             possibleMove = False
-        xblock = x - 1
+        xblock -= 1
 
     if agents[0].action == ag.Actions["right"]:
         if xblock == world.width - 1 or world.map[xblock+1][yblock] == w.WorldStates["wall"]:
             possibleMove = False
-        xblock = x + 1
+        xblock += 1
 
     if agents[0].action == ag.Actions["up"]:
         if yblock == 0 or world.map[xblock][yblock - 1] == w.WorldStates["wall"]:
             possibleMove = False
-        yblock = y - 1
+        yblock -= 1
 
     if agents[0].action == ag.Actions["down"]:
-        if yblock == world.height or world.map[xblock][yblock + 1] == w.WorldStates["wall"]:
+        if yblock == world.height - 1 or world.map[xblock][yblock + 1] == w.WorldStates["wall"]:
             possibleMove = False
-        yblock = y + 1
+        yblock += 1
 
     if possibleMove:
         world.block = (xblock, yblock)
-
-    for agent in agents:
-        moveAgent(agent, world)
+        # Calculate
+        if any(world.block == g for g in goals):
+            for agent in agents:
+                if agent.grasped:
+                    agent.reward = 10
+                    agent.updateQ(alpha, gamma)
+        [moveAgent(agent, world) for agent in agents]
 
     world.map[world.block[0]][world.block[1]] = w.WorldStates["block"]
 
@@ -132,35 +135,48 @@ if __name__ == "__main__":
     gamma = 0.5
 
     # World parameters
-    height = 10
-    width = 10
-    goals = [(0, 4), (9, 0)]
-    walls = [(2, 0), (2, 1), (2, 2), (2, 3), (2, 4)]
-    block = (0, 3)
+    height = 3
+    width = 3
+    goals = [(1, 1)]
+    walls = []
+    block = (0, 2)
 
     # Starting positions of the agents,
     # should be the same amount as the number agents
     start = [(0, 0)]  # , (9, 9)]
 
-    # Create the world and everything in it
-    new_world = w.World(height, width, goals, walls, block, start)
-    new_world.add_objects()
-    new_world.print_map()
-
     # Create the agents
     agents = [ag.Agent(height*width, start[i], height, width)
               for i in range(numberOfAgents)]
 
-    # Run a number of iterations
-    # for x in range(50):
-    while not any([new_world.block == g for g in goals]):
-        # Choose an action for every agent
-        [agent.chooseAction(tau) for agent in agents]
-        # Perform the chosen actions (and obtain rewards)
-        new_world = updateWorld(agents, new_world)
-        # Update the Q-values of the agents
-        [agent.updateQ(alpha, gamma) for agent in agents]
+    for epoch in range(100):
+        print(epoch)
+        # Set the agents to their starting positions
+        for index, agent in enumerate(agents):
+            agent.state = start[index]
+            agent.grasped = 0
+
+        # Create the world and everything in it
+        new_world = w.World(height, width, goals, walls, block, start)
+        new_world.add_objects()
+
+        counter = 0;
+        while not any([new_world.block == g for g in goals]):
+            counter += 1
+            # Choose an action for every agent
+            [agent.chooseAction(tau, new_world) for agent in agents]
+            # Perform the chosen actions (and obtain rewards)
+            new_world = updateWorld(agents, new_world)
+            # Update the Q-values of the agents
+            [agent.updateQ(alpha, gamma) for agent in agents]
 
         tau = tau * 0.999
-    # Print the updated map
+
+    agents[0].print_policy(new_world)
     new_world.print_map()
+
+'''
+Look at:
+Where and when do the q-values have to get updated? Now on multiple occasions, which is incorrect.
+Is the q-value calculation correct? (state vs nextState vs the place where updateQ is called, things are not in sync)
+'''

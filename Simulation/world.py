@@ -27,7 +27,7 @@ class World:
         self.block = block
         self.start = start
         self.map = [
-            [WorldStates["free"] for x in range(width)] for y in range(height)]
+            [WorldStates["free"] for y in range(height)] for x in range(width)]
 
     def add_objects(self):
         """Add the objects such as walls to the map."""
