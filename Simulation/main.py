@@ -3,41 +3,43 @@ import world as w
 import agent as ag
 import numpy as np
 
-def nextToBlock(x, y, world):
+
+def nextToBlock(y, x, world):
     """Check if the block is next to the agent."""
-    if np.absolute(x-world.block[0]) + np.absolute(y-world.block[1]) == 1:
+    if np.absolute(y-world.block[0]) + np.absolute(x-world.block[1]) == 1:
         return True
     return False
 
 
-def checkAgentMove(world, x, y, action):
+def checkAgentMove(world, y, x, action):
     """Check to see if a move is possible for an agent.
 
     Return true (not false) if the move is not OOB or to another object,
     or if the block is next to the agent, if he wants to grab
     """
-    if (action == ag.Actions["grab"] and not nextToBlock(x, y, world)):
+    if (action == ag.Actions["grab"] and not nextToBlock(y, x, world)):
             return False
     elif (action == ag.Actions["left"] and
-          (x == 0 or world.map[x-1][y] != w.WorldStates["free"])):
+          (x == 0 or world.map[y][x-1] != w.WorldStates["free"])):
             return False
     elif ((action == ag.Actions["right"]) and
-          (x == world.width-1 or world.map[x+1][y] != w.WorldStates["free"])):
+          (x == world.columns-1 or world.map[y][x+1] != w.WorldStates["free"])):
             return False
     elif ((action == ag.Actions["up"]) and
-          (y == 0 or world.map[x][y-1] != w.WorldStates["free"])):
+          (y == 0 or world.map[y-1][x] != w.WorldStates["free"])):
             return False
     elif ((action == ag.Actions["down"]) and
-          (y == world.height-1 or world.map[x][y+1] != w.WorldStates["free"])):
+          (y == world.rows-1 or world.map[y+1][x] != w.WorldStates["free"])):
             return False
     return True
 
 
 def moveAgent(agent, world):
     # Move a single agent if he can take his intended action
-    x = agent.state[0]
-    y = agent.state[1]
-    if checkAgentMove(world, x, y, agent.action):
+    y, x = agent.state
+    agent.prevGrasped = agent.grasped
+
+    if checkAgentMove(world, y, x, agent.action):
         if agent.action == ag.Actions["left"]:
             x = x - 1
         if agent.action == ag.Actions["right"]:
@@ -51,8 +53,8 @@ def moveAgent(agent, world):
             agent.reward = 1
 
         world.map[agent.state[0]][agent.state[1]] = w.WorldStates["free"]
-        world.map[x][y] = w.WorldStates["agent"]
-        agent.state = (x, y)
+        world.map[y][x] = w.WorldStates["agent"]
+        agent.state = (y, x)
 
 
 def moveBlock(agents, world):
@@ -62,8 +64,8 @@ def moveBlock(agents, world):
     check if it's possible for the agents and the block.
     If so,  first move the block and then let the agents move using moveAgent.
     """
-    xblock = world.block[0]
-    yblock = world.block[1]
+    yblock = world.block[0]
+    xblock = world.block[1]
     possibleMove = True
 
     # Set the state of the block on "free",
@@ -76,33 +78,35 @@ def moveBlock(agents, world):
             break
 
     if agents[0].action == ag.Actions["left"]:
-        if xblock == 0 or world.map[xblock-1][yblock] == w.WorldStates["wall"]:
+        if xblock == 0 or world.map[yblock][xblock-1] == w.WorldStates["wall"]:
             possibleMove = False
         xblock -= 1
 
     if agents[0].action == ag.Actions["right"]:
-        if xblock == world.width - 1 or world.map[xblock+1][yblock] == w.WorldStates["wall"]:
+        if xblock == world.columns - 1 or world.map[yblock][xblock+1] == w.WorldStates["wall"]:
             possibleMove = False
         xblock += 1
 
     if agents[0].action == ag.Actions["up"]:
-        if yblock == 0 or world.map[xblock][yblock - 1] == w.WorldStates["wall"]:
+        if yblock == 0 or world.map[yblock - 1][xblock] == w.WorldStates["wall"]:
             possibleMove = False
         yblock -= 1
 
     if agents[0].action == ag.Actions["down"]:
-        if yblock == world.height - 1 or world.map[xblock][yblock + 1] == w.WorldStates["wall"]:
+        if (
+            yblock == world.rows - 1
+            or world.map[yblock + 1][xblock] == w.WorldStates["wall"]
+        ):
             possibleMove = False
         yblock += 1
 
     if possibleMove:
-        world.block = (xblock, yblock)
+        world.block = (yblock, xblock)
         # Calculate
         if any(world.block == g for g in goals):
             for agent in agents:
                 if agent.grasped:
                     agent.reward = 10
-                    agent.updateQ(alpha, gamma)
         [moveAgent(agent, world) for agent in agents]
 
     world.map[world.block[0]][world.block[1]] = w.WorldStates["block"]
@@ -114,8 +118,6 @@ def updateWorld(agents, world):
     If not all agents grabbed the block, move the single ones,
     else move the block if their actions correspond.
     """
-    # If not all agents have grabbed the block,
-    # move the single agents that have not grabbed. Else move the block.
     allGrasped = all(ag.grasped for ag in agents)
     sameAction = all(ag.action for ag in agents)
     if allGrasped and sameAction:
@@ -131,22 +133,22 @@ if __name__ == "__main__":
     # Some parameters
     numberOfAgents = 1
     tau = 0.99
-    alpha = 0.5
-    gamma = 0.5
+    alpha = 0.1
+    gamma = 0.9
 
     # World parameters
-    height = 3
-    width = 3
-    goals = [(1, 1)]
+    rows = 5
+    columns = 15
+    goals = [(3, 1)]
     walls = []
-    block = (0, 2)
+    block = (0, 10)
 
     # Starting positions of the agents,
     # should be the same amount as the number agents
     start = [(0, 0)]  # , (9, 9)]
 
     # Create the agents
-    agents = [ag.Agent(height*width, start[i], height, width)
+    agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
 
     for epoch in range(100):
@@ -157,12 +159,14 @@ if __name__ == "__main__":
             agent.grasped = 0
 
         # Create the world and everything in it
-        new_world = w.World(height, width, goals, walls, block, start)
+        new_world = w.World(rows, columns, goals, walls, block, start)
         new_world.add_objects()
 
-        counter = 0;
+        counter = 0
         while not any([new_world.block == g for g in goals]):
-            counter += 1
+            # Save the current state
+            for agent in agents:
+                agent.prevState = agent.state
             # Choose an action for every agent
             [agent.chooseAction(tau, new_world) for agent in agents]
             # Perform the chosen actions (and obtain rewards)
@@ -170,10 +174,14 @@ if __name__ == "__main__":
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
 
+            counter += 1
+            if counter > 10000:
+                print("Took too long")
+                break
+
         tau = tau * 0.999
 
     agents[0].print_policy(new_world)
-    new_world.print_map()
 
 '''
 Look at:
