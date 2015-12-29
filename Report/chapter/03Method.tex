@@ -1,1 +1,27 @@
 \section{Method}
+To compare the various learning algorithms, we've written a multi-agent simulation in Python in which agents have to move an object to a certain goal area.
+\subsection{The Environment}
+The environment consists of an \textbf{x by x} grid in which the agents can move around. There are a few different types of cells:
+\subsubsection*{Free cells}
+These are cells that agents can freely move to. Once an agent or a block moves to a free cell, this cell becomes occupied.
+\subsubsection*{Walls}
+These cells are occupied, so an agent can never move to them. They are initialized at the start of the simulation and will not change during the simulation. There are outer walls, which are on the edges of the grid, and some walls inside the grid to make the environment more complex.
+\subsubsection*{Block}
+The block is an item that has to be transported to a certain goal area by the agents. It occupies one cell, and agents can't move through it. It can only be moved if it's grasped by two agents, and those agents move in the same direction. If the block reaches the goal, a run ends.
+\subsubsection*{Goal}
+The goal cell is basically the same as a free cell, with the exception that if the block reaches the goal, a run of the simulation ends and a new run starts. Agents can freely move on and over the goal, just like with free cells.
+\subsubsection*{Agent}
+We'll talk about these in more detail in the next subsection. They occupy one cell, so other agents can't move through them.
+\subsection{The Agents}
+For our initial simulation, we start out with two agents. At the start of a run, the agents are spawned at their respective start locations which are defined in the algorithm. Each step, an agent can perform one of five actions:
+\begin{itemize}
+\item \textit{Stay}
+\item \textit{Left}
+\item \textit{Up}
+\item \textit{Right}
+\item \textit{Down}
+\item \textit{Grab}
+\end{itemize}
+The actions mostly speak for themselves. The agent can stay where it is, move in one of four directions or grab the block. The \textit{grab} action can be performed at any step, but will only do something when an agent is next to the block. Once an agent has grabbed the block it will not let go. The move actions \textit{left, up, right} and \textit{down} only do something when the cell the agent wants to move to is actually free.\\
+Each step in the simulation, an agent chooses the best action based on its learning algorithm. Then, the agents perform their actions and update the tables related to their learning algorithms (usually these are their Q-tables).
+\subsection{The Learning Algorithms}
