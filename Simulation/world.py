@@ -7,7 +7,7 @@ Start = 0 (S in map)
 Path = -1 (. in map)
 Wall = -10 (# in map)
 """
-
+import numpy as np
 """ The possible states a world cell can have."""
 WorldStates = {
     "free": 0,
@@ -18,16 +18,16 @@ WorldStates = {
 
 
 class World:
-    def __init__(self, height, width, goals, walls, block, start):
+    def __init__(self, rows, columns, goals, walls, block, start):
         """Initialize a new world with the given parameters."""
-        self.height = height
-        self.width = width
+        self.rows = rows
+        self.columns = columns
         self.goals = goals
         self.walls = walls
         self.block = block
         self.start = start
-        self.map = [
-            [WorldStates["free"] for y in range(height)] for x in range(width)]
+        # Numpy matrix is inde/xed by [row, column]
+        self.map = np.zeros((rows, columns))
 
     def add_objects(self):
         """Add the objects such as walls to the map."""
@@ -39,7 +39,7 @@ class World:
 
     def print_map(self):
         """Print the current situation of the map."""
-        print("# "*(self.width+2))
+        print("# "*(self.columns+2))
         for x in self.map:
             print("#", end=" ")
             for y in x:
@@ -54,4 +54,4 @@ class World:
                 elif y == 100:
                     print("G", end=" ")
             print("#")
-        print("# "*(self.width+2))
+        print("# "*(self.columns+2))

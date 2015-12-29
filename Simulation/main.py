@@ -131,7 +131,7 @@ def updateWorld(agents, world):
 if __name__ == "__main__":
 
     # Some parameters
-    numberOfAgents = 1
+    numberOfAgents = 2
     tau = 0.99
     alpha = 0.1
     gamma = 0.9
@@ -141,17 +141,17 @@ if __name__ == "__main__":
     columns = 15
     goals = [(3, 1)]
     walls = []
-    block = (0, 10)
+    block = (0, 14)
 
     # Starting positions of the agents,
     # should be the same amount as the number agents
-    start = [(0, 0)]  # , (9, 9)]
+    start = [(4, 14), (0, 0)]
 
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
 
-    for epoch in range(100):
+    for epoch in range(500):
         print(epoch)
         # Set the agents to their starting positions
         for index, agent in enumerate(agents):
@@ -181,7 +181,9 @@ if __name__ == "__main__":
 
         tau = tau * 0.999
 
-    agents[0].print_policy(new_world)
+    for index, agent in enumerate(agents):
+        print("Agent: ", index)
+        agent.print_policy(new_world)
 
 '''
 Look at:
