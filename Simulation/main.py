@@ -2,6 +2,7 @@
 import world as w
 import agent as ag
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def nextToBlock(y, x, world):
@@ -112,17 +113,20 @@ def moveBlock(agents, world):
     world.map[world.block[0]][world.block[1]] = w.WorldStates["block"]
 
 
-def updateWorld(agents, world):
+def updateWorld(agents, world, steps, epoch):
     """Update everythings position in the world.
 
     If not all agents grabbed the block, move the single ones,
     else move the block if their actions correspond.
     """
     allGrasped = all(ag.grasped for ag in agents)
-    sameAction = all(ag.action for ag in agents)
-    if allGrasped and sameAction:
-        moveBlock(agents, world)
+    sameAction = all(ag.action == agents[0].action for ag in agents)
+    if allGrasped:
+        steps[1][epoch] += 1
+        if sameAction:
+            moveBlock(agents, world)
     else:
+        steps[0][epoch] += 1
         for agent in agents:
             if not agent.grasped:
                 moveAgent(agent, world)
@@ -132,7 +136,7 @@ if __name__ == "__main__":
 
     # Some parameters
     numberOfAgents = 2
-    tau = 0.99
+    tau = 0.3
     alpha = 0.1
     gamma = 0.9
 
@@ -151,7 +155,14 @@ if __name__ == "__main__":
     agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
 
-    for epoch in range(500):
+    # Create the world and everything in it
+    new_world = w.World(rows, columns, goals, walls, block, start)
+    new_world.add_objects()
+    new_world.print_map()
+
+    epochs = 500
+    steps = np.zeros((2,epochs))
+    for epoch in range(epochs):
         print(epoch)
         # Set the agents to their starting positions
         for index, agent in enumerate(agents):
@@ -162,7 +173,6 @@ if __name__ == "__main__":
         new_world = w.World(rows, columns, goals, walls, block, start)
         new_world.add_objects()
 
-        counter = 0
         while not any([new_world.block == g for g in goals]):
             # Save the current state
             for agent in agents:
@@ -170,23 +180,33 @@ if __name__ == "__main__":
             # Choose an action for every agent
             [agent.chooseAction(tau, new_world) for agent in agents]
             # Perform the chosen actions (and obtain rewards)
-            new_world = updateWorld(agents, new_world)
+            new_world = updateWorld(agents, new_world, steps, epoch)
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
 
-            counter += 1
-            if counter > 10000:
-                print("Took too long")
-                break
+            new_world.time += 1
 
-        tau = tau * 0.999
+        tau *= 0.999
 
     for index, agent in enumerate(agents):
         print("Agent: ", index)
         agent.print_policy(new_world)
 
-'''
-Look at:
-Where and when do the q-values have to get updated? Now on multiple occasions, which is incorrect.
-Is the q-value calculation correct? (state vs nextState vs the place where updateQ is called, things are not in sync)
-'''
+    print(tau)
+
+    #print(steps)
+    plt.figure(1)
+    plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
+    plt.title('Steps per epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+
+    plt.figure(2)
+    plt.plot(range(epochs), np.convolve(steps[0], np.ones(3)/3, 'same'), 'r-', range(epochs), np.convolve(steps[1], np.ones(3)/3, 'same'), 'b-')
+    plt.title('Steps per epoch (smoothed for window = 3)')
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+
+    plt.show()
