@@ -28,6 +28,7 @@ class World:
         self.start = start
         # Numpy matrix is inde/xed by [row, column]
         self.map = np.zeros((rows, columns))
+        self.time = 0
 
     def add_objects(self):
         """Add the objects such as walls to the map."""

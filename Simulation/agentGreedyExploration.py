@@ -46,7 +46,7 @@ class Agent:
         self.grasped = 0
         self.reward = 0
 
-    def chooseAction(self, tau, world):
+    def chooseAction(self, epsilon, world):
         """ Chooses the best possible action, given a value of tau:
             Divide each number by the total sum, to achieve probabilities
             For each action a:
@@ -58,20 +58,10 @@ class Agent:
             self.action = Actions["grab"]
         else:
             sample = np.random.random_sample()
-            single = np.exp(self.q[self.state[0], self.state[1], :,
-                            self.grasped]/tau)
-            if any(single == float('inf')):
-                print("tau ", tau)
-                print("q values ", self.q[self.state[0], self.state[1], :,
-                                          self.grasped])
-            total = sum(np.exp(self.q[self.state[0], self.state[1], :,
-                               self.grasped]/tau))
-            probs = single / total
-
-            for action in Actions2:
-                if sample <= np.cumsum(probs)[action]:
-                    self.action = action
-                    break
+            if sample > epsilon:
+                self.action = np.argmax(self.q[self.state[0], self.state[1], :, self.grasped])
+            else:
+                self.action = np.random.randint(6)
 
     def findMaxQ(self, state):
         """Find the maximum next q value, given the current state."""
@@ -95,7 +85,7 @@ class Agent:
         curQ = self.q[state[0], state[1], action, self.prevGrasped]
         nextQ = self.findMaxQ(nextState)
         update = alpha * (self.reward + gamma * nextQ - curQ)
-        self.q[state[0], state[1], action, self.prevGrasped] = curQ + update
+        self.q[state[0], state[1], action, self.prevGrasped] = (curQ + update)
         self.reward = 0
 
     def print_q(self):
