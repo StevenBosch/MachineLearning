@@ -72,8 +72,6 @@ class Agent:
                 if sample <= np.cumsum(probs)[action]:
                     self.action = action
                     break
-        # print(Actions2[self.action])
-        # print("grasped ", self.grasped)
 
     def findMaxQ(self, state):
         """Find the maximum next q value, given the current state."""
@@ -97,7 +95,7 @@ class Agent:
         curQ = self.q[state[0], state[1], action, self.prevGrasped]
         nextQ = self.findMaxQ(nextState)
         update = alpha * (self.reward + gamma * nextQ - curQ)
-        self.q[state[0], state[1], action, self.prevGrasped] = (curQ + update)
+        self.q[state[0], state[1], action, self.prevGrasped] = curQ + update
         self.reward = 0
 
     def print_q(self):
