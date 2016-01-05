@@ -58,14 +58,16 @@ class Agent:
             self.action = Actions["grab"]
         else:
             sample = np.random.random_sample()
+            smean = np.mean(np.exp(self.q[self.state[0], self.state[1], :,
+                               self.grasped]/tau))
             single = np.exp(self.q[self.state[0], self.state[1], :,
-                            self.grasped]/tau)
+                            self.grasped]/tau)/smean
             if any(single == float('inf')):
                 print("tau ", tau)
                 print("q values ", self.q[self.state[0], self.state[1], :,
                                           self.grasped])
             total = sum(np.exp(self.q[self.state[0], self.state[1], :,
-                               self.grasped]/tau))
+                               self.grasped]/tau)/smean)
             probs = single / total
 
             for action in Actions2:

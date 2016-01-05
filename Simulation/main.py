@@ -1,6 +1,6 @@
 """Our main module."""
 import world as w
-import agent as ag
+import agentExponentExploration as ag
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     new_world.add_objects()
     new_world.print_map()
 
-    epochs = 500
+    epochs = 2000
     steps = np.zeros((2,epochs))
     for epoch in range(epochs):
         print(epoch)
