@@ -49,19 +49,20 @@ if __name__ == "__main__":
 
     # World parameters
     rows = 5
-    columns = 15
+    columns = 5
     goals = [(3, 1)]
     walls = []
-    block = (0, 14)
+    block = (0, 4)
 
     # Starting positions of the agents,
     # should be the same amount as the number agents
-    start = [(4, 14), (0, 0)]
+    start = [(4, 4), (0, 0)]
     numberOfAgents = len(start)
 
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
+    # teamAgent = ag.Agent(start, rows, columns, len(start))
 
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 200
+    epochs = 20
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):

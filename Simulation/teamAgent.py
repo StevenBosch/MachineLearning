@@ -25,16 +25,37 @@ Actions3 = {
 class Agent:
     """Our agent class"""
 
-    def __init__(self, state, rows, columns):
+    def __init__(self, startStates, rows, columns, nAgents):
         """ Initializes an agent with a starting state and parameters """
-        self.q = np.zeros((rows, columns, len(Actions), 2))
+        # Q can be indexed by [x, y for every agent, action for every agent,
+        # grasped for every agent], i.e.
+        # q[0,0,1,1,4,5,0,0] for 2 agents
+        self.nAgents = nAgents
+        self.q = np.zeros((
+            [rows, columns] * nAgents +
+            [2] * nAgents +
+            [len(Actions) ** nAgents]
+        ))
 
-        self.prevState = (0, 0)
-        self.state = state
-        self.action = 0
-        self.prevGrasped = 0
-        self.grasped = 0
-        self.reward = 0
+        self.prevState = [0, 0] * nAgents
+        # State contains the x,y coodinates of all agents
+        self.state = []
+        for i in range(self.nAgents):
+            self.state += list(start[i])
+
+        # Action contains the action for every agent
+        self.action = [0] * nAgents
+        self.prevGrasped = [0] * nAgents
+        self.grasped = [0] * nAgents
+        self.reward = [0] * nAgents
+
+    def valueToActionList(value):
+        actions = []
+        for i in range(self.nAgents):
+            actions.append(
+                value // (len(Actions) ** (self.nAgents - i - 1)) % len(Actions)
+            )
+        return actions
 
     def chooseAction(self, tau, world):
         """ Chooses the best possible action, given a value of tau:
@@ -45,14 +66,14 @@ class Agent:
             Probabilities = P(a) / SumAllA
         """
         sample = np.random.random_sample()
-        single = np.exp(self.q[self.state[0], self.state[1], :,
-                        self.grasped]/tau)
+        index = tuple(self.state + self.grasped)
+
+        single = np.exp(self.q[index]/tau)
 
         # Print for debugging inf values
         if any(single == float('inf')):
             print("tau ", tau)
-            print("q values ", self.q[self.state[0], self.state[1], :,
-                  self.grasped])
+            print("q values ", self.q[index])
 
         total = sum(single)
         probs = single / total
@@ -70,20 +91,14 @@ class Agent:
         choose a random action
         """
         sample = np.random.random_sample()
+        index = tuple(self.state + self.grasped)
         if sample < epsilon:
-            self.action = np.argmax(
-                self.q[self.state[0], self.state[1], :, self.grasped]
-            )
+            self.action = np.argmax(self.q[index])
         else:
-            self.action = np.random.randint(len(Actions))
-
-    def findMaxQ(self, state):
-        """Find the maximum next q value, given the current state."""
-        nextQ = -np.inf
-        for action in Actions:
-            qValue = self.q[state[0], state[1], Actions[action], self.grasped]
-            nextQ = max(qValue, nextQ)
-        return nextQ
+            actionList = []
+            for i in range(self.nAgents):
+                actionList += np.random.randint(len(Actions))
+            self.action = actionList
 
     def updateQ(self, alpha, gamma):
         """ Updates a Q function:
@@ -96,10 +111,14 @@ class Agent:
         state = self.prevState
         action = self.action
         nextState = self.state
-        curQ = self.q[state[0], state[1], action, self.prevGrasped]
-        nextQ = self.findMaxQ(nextState)
+
+        currentIndex = tuple(state + self.grasped + [self.action])
+        curQ = self.q[currentIndex]
+        nextIndex = tuple(state + self.grasped)
+        nextQ = np.max(self.q[nextIndex])
+
         update = alpha * (self.reward + gamma * nextQ - curQ)
-        self.q[state[0], state[1], action, self.prevGrasped] = curQ + update
+        self.q[currentIndex] = curQ + update
         self.reward = 0
 
     def print_q(self):
