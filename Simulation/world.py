@@ -8,6 +8,7 @@ Path = -1 (. in map)
 Wall = -10 (# in map)
 """
 import numpy as np
+import agent as ag
 """ The possible states a world cell can have."""
 WorldStates = {
     "free": 0,
@@ -56,3 +57,85 @@ class World:
                     print("G", end=" ")
             print("#")
         print("# "*(self.columns+2))
+
+    def nextToBlock(self, y, x):
+        """Check if the block is next to the agent."""
+        if np.absolute(y-self.block[0]) + np.absolute(x-self.block[1]) == 1:
+            return True
+        return False
+
+    def checkMove(self, y, x, action):
+        """Check to see if a move is possible.
+
+        Return true if the move is not OOB or to another object,
+        or if the block is next to the agent, if he wants to grab
+        """
+        nCol = self.columns
+        nRow = self.rows
+
+        if (action == ag.Actions["grab"] and not self.nextToBlock(y, x)):
+                return False
+        elif (action == ag.Actions["left"] and
+              (x == 0 or self.map[y][x-1] != WorldStates["free"])):
+                return False
+        elif ((action == ag.Actions["right"]) and
+              (x == nCol-1 or self.map[y][x+1] != WorldStates["free"])):
+                return False
+        elif ((action == ag.Actions["up"]) and
+              (y == 0 or self.map[y-1][x] != WorldStates["free"])):
+                return False
+        elif ((action == ag.Actions["down"]) and
+              (y == nRow-1 or self.map[y+1][x] != WorldStates["free"])):
+                return False
+        return True
+
+    def moveBlock(self, agents):
+        """Move to block according to the actions taken by the agents.
+
+        For the action the agents want to do,
+        check if it's possible for the agents and the block.
+        If so,first move the block and then move the agents using moveAgent.
+        """
+        yblock = self.block[0]
+        xblock = self.block[1]
+        possibleMove = False
+
+        # Set the state of the block on "free",
+        # so the agents see that as movable space, this is reset later on
+        self.map[self.block[0]][self.block[1]] = WorldStates["free"]
+
+        # Check if the every agents' move is possible
+        possibleMove = all(
+            self.checkMove(a.state[0], a.state[1], a.action) for a in agents
+        )
+
+        # Check if the blocks' move is possible
+        # we temporary have to set the agents position to free to check
+        for a in agents:
+            self.map[a.state[0]][a.state[1]] = WorldStates["free"]
+        possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+        for a in agents:
+            self.map[a.state[0]][a.state[1]] = WorldStates["agent"]
+
+        # Time to move that block
+        if possibleMove:
+            if agents[0].action == ag.Actions["left"]:
+                xblock -= 1
+            if agents[0].action == ag.Actions["right"]:
+                xblock += 1
+            if agents[0].action == ag.Actions["up"]:
+                yblock -= 1
+            if agents[0].action == ag.Actions["down"]:
+                yblock += 1
+            self.block = (yblock, xblock)
+
+            # Check to see if we reached the goal
+            if any(self.block == g for g in self.goals):
+                for agent in agents:
+                    if agent.grasped:
+                        agent.reward = 10
+            # Move the agents
+            [agent.moveAgent(self) for agent in agents]
+
+        # Set the block's position to occupied on the map
+        self.map[self.block[0]][self.block[1]] = WorldStates["block"]

@@ -1,7 +1,6 @@
-"""Our agent module."""
+"""Our self module."""
 import numpy as np
 import world as w
-from main import nextToBlock
 
 """ Our actions are interpreted as the following integer values: """
 Actions = {
@@ -54,24 +53,49 @@ class Agent:
             SumAllA ( P(a) = exp( Q(s, a), / tau) )
             Probabilities = P(a) / SumAllA
         """
-        if nextToBlock(self.state[0], self.state[1], world) and not self.grasped:
+        if (
+                world.nextToBlock(self.state[0], self.state[1]) and
+                not self.grasped
+        ):
             self.action = Actions["grab"]
         else:
             sample = np.random.random_sample()
             single = np.exp(self.q[self.state[0], self.state[1], :,
                             self.grasped]/tau)
+
+            # Print for debugging inf values
             if any(single == float('inf')):
                 print("tau ", tau)
                 print("q values ", self.q[self.state[0], self.state[1], :,
-                                          self.grasped])
-            total = sum(np.exp(self.q[self.state[0], self.state[1], :,
-                               self.grasped]/tau))
+                      self.grasped])
+
+            total = sum(single)
             probs = single / total
 
             for action in Actions2:
                 if sample <= np.cumsum(probs)[action]:
                     self.action = action
                     break
+
+    def chooseGreedyAction(self, epsilon, world):
+        """ Chooses the next action, greedy style
+
+        With a chance epsilon, choose the best action, else
+        choose a random action
+        """
+        if (
+                world.nextToBlock(self.state[0], self.state[1]) and
+                not self.grasped
+        ):
+            self.action = Actions["grab"]
+        else:
+            sample = np.random.random_sample()
+            if sample < epsilon:
+                self.action = np.argmax(
+                    self.q[self.state[0], self.state[1], :, self.grasped]
+                )
+            else:
+                self.action = np.random.randint(len(Actions))
 
     def findMaxQ(self, state):
         """Find the maximum next q value, given the current state."""
@@ -107,13 +131,35 @@ class Agent:
             print("Policy for grasped", g, ":")
             print("# "*(world.columns+2))
             for y in range(world.rows):
-                print("#", end=" ")
+                print("#", end=' ')
                 for x in range(world.columns):
                     if np.argmax(self.q[y, x, :, g]) == 0.0:
                         print("x", end=" ")
                     else:
-                        print(Actions3[np.argmax(self.q[y, x, :, g])], end = " ")
+                        print(Actions3[np.argmax(self.q[y, x, :, g])], end=" ")
 
                 print("#")
             print("# "*(world.columns+2))
             print("\n")
+
+    def moveAgent(self, world):
+        # Move a single agent if he can take his intended action
+        y, x = self.state
+        self.prevGrasped = self.grasped
+
+        if world.checkMove(y, x, self.action):
+            if self.action == Actions["left"]:
+                x = x - 1
+            if self.action == Actions["right"]:
+                x = x + 1
+            if self.action == Actions["up"]:
+                y = y - 1
+            if self.action == Actions["down"]:
+                y = y + 1
+            if self.action == Actions["grab"] and self.grasped == 0:
+                self.grasped = 1
+                self.reward = 1
+
+            world.map[self.state[0]][self.state[1]] = w.WorldStates["free"]
+            world.map[y][x] = w.WorldStates["agent"]
+            self.state = (y, x)

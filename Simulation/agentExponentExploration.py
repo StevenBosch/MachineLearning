@@ -59,7 +59,7 @@ class Agent:
         else:
             sample = np.random.random_sample()
             single = np.exp(self.q[self.state[0], self.state[1], :,
-                               self.grasped]/tau)
+                            self.grasped]/tau)
             single = single/np.mean(single)
             if any(single == float('inf')):
                 print("tau ", tau)
