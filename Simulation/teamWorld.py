@@ -115,7 +115,10 @@ class World:
             # we temporary have to set the agents position to free to check
             for a in agents:
                 self.map[a.state[0]][a.state[1]] = WorldStates["free"]
-            possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+            
+            if possibleMove:
+                possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+            
             for a in agents:
                 self.map[a.state[0]][a.state[1]] = WorldStates["agent"]
 
