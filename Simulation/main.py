@@ -1,9 +1,12 @@
 """Our main module."""
 import sys
-import world as w
-import agent as ag
+#import world as w
+import teamWorld as w
+#import agent as ag
+import teamAgent as ag
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
 def updateWorld(agents, world, steps, epoch):
@@ -43,7 +46,8 @@ if __name__ == "__main__":
     # actionStyle = "greedy"
     # actionStyle = "exponent"
     epsilon = 0.9
-    tau = 0.99
+    startTau = 0.99
+    tau = startTau
     alpha = 0.1
     gamma = 0.9
 
@@ -62,7 +66,7 @@ if __name__ == "__main__":
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
-    # teamAgent = ag.Agent(start, rows, columns, len(start))
+    #agents = [ag.Agent(start, rows, columns, len(start))]
 
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
@@ -70,15 +74,14 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 20
+    epochs = 100
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
         print(epoch)
         # Set the agents to their starting positions
-        for index, agent in enumerate(agents):
-            agent.state = start[index]
-            agent.grasped = 0
+        for agent in agents:
+            agent.reset() 
 
         # Create the world and everything in it
         world = w.World(rows, columns, goals, walls, block, start)
@@ -99,14 +102,14 @@ if __name__ == "__main__":
             world = updateWorld(agents, world, steps, epoch)
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
-
+           
             world.time += 1
-
-        tau *= 0.999
-
-    for index, agent in enumerate(agents):
-        print("Agent: ", index)
-        agent.print_policy(world)
+        world.print_map()
+        tau -= (startTau-0.1) / epochs
+        
+    #for index, agent in enumerate(agents):
+        #print("Agent: ", index)
+        #agent.print_policy(world)
 
     print(tau)
 
@@ -119,15 +122,16 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
 
     plt.figure(2)
+    smooth = math.ceil(epochs * 0.01)
     plt.plot(
         range(epochs),
-        np.convolve(steps[0], np.ones(3)/3, 'same'),
+        np.convolve(steps[0], np.ones(smooth)/smooth, 'same'),
         'r-',
         range(epochs),
-        np.convolve(steps[1], np.ones(3)/3, 'same'),
+        np.convolve(steps[1], np.ones(smooth)/smooth, 'same'),
         'b-'
     )
-    plt.title('Steps per epoch (smoothed for window = 3)')
+    plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
     plt.xlabel('Epoch')
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])

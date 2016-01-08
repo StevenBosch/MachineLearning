@@ -35,6 +35,11 @@ class Agent:
         self.prevGrasped = 0
         self.grasped = 0
         self.reward = 0
+        self.startState = self.state
+        
+    def reset(self):
+        self.state = self.startState
+        self.grasped = 0
 
     def chooseAction(self, tau, world):
         """ Chooses the best possible action, given a value of tau:
