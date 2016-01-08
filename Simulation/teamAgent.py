@@ -117,10 +117,6 @@ class Agent:
         action = self.action
         nextState = self.state
 
-        #print(state)
-        #print(action)
-        #print(self.grasped)
-        #print()
         currentIndex = tuple(state + self.grasped + [action])
         curQ = self.q[currentIndex]
         nextIndex = tuple(state + self.grasped)
@@ -157,11 +153,7 @@ class Agent:
             if not self.grasped[agent] or all(self.grasped):
                 y = self.state[2*agent]
                 x = self.state[2*agent+1]
-                #print(self.prevGrasped)
-                #print(self.grasped)
-                #print()
                 self.prevGrasped[agent] = self.grasped[agent]
-                #print("y: ", y, " x: ", x, "action: ", actions[agent])
 
                 if world.checkMove(y, x, actions[agent]):
                     if actions[agent] == Actions["left"]:

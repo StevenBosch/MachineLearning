@@ -131,7 +131,6 @@ class World:
                 if actionList[0] == ag.Actions["down"]:
                     yblock += 1
                 self.block = (yblock, xblock)
-                print("moved")
                 # Check to see if we reached the goal
                 if any(self.block == g for g in self.goals):
                     for agent in agents:

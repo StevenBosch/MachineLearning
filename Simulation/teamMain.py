@@ -87,7 +87,6 @@ if __name__ == "__main__":
         # Create the world and everything in it
         world = w.World(rows, columns, goals, walls, block, start)
         world.add_objects()
-        world.print_map()
         while not any([world.block == g for g in goals]):
             # Save the current state
             for agent in agents:
@@ -104,18 +103,13 @@ if __name__ == "__main__":
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
            
-            print("steps0 ", steps[0])
-            print("steps1 ", steps[1])
             if steps[0][epoch] > 10000 or steps[1][epoch] > 10000:
                 world.print_map()
-            print()
 
-        world.print_map()
-        print(agents[0].state)
+        # world.print_map()
         
         tau -= (startTau-0.1) / epochs
-
-    # print(steps)
+        
     plt.figure(1)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
     plt.title('Steps per epoch')
