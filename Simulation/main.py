@@ -1,9 +1,9 @@
 """Our main module."""
 import sys
-#import world as w
-import teamWorld as w
-#import agent as ag
-import teamAgent as ag
+import world as w
+#import teamWorld as w
+import agent as ag
+#import teamAgent as ag
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 100
+    epochs = 1000
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
@@ -103,9 +103,11 @@ if __name__ == "__main__":
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
            
-            world.time += 1
-        world.print_map()
+            if(epoch == epochs - 1):
+                world.print_map()
+        
         tau -= (startTau-0.1) / epochs
+        
         
     #for index, agent in enumerate(agents):
         #print("Agent: ", index)
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
 
     plt.figure(2)
-    smooth = math.ceil(epochs * 0.01)
+    smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs),
         np.convolve(steps[0], np.ones(smooth)/smooth, 'same'),

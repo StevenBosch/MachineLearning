@@ -29,7 +29,6 @@ class World:
         self.start = start
         # Numpy matrix is inde/xed by [row, column]
         self.map = np.zeros((rows, columns))
-        self.time = 0
 
     def add_objects(self):
         """Add the objects such as walls to the map."""
@@ -113,7 +112,10 @@ class World:
         # we temporary have to set the agents position to free to check
         for a in agents:
             self.map[a.state[0]][a.state[1]] = WorldStates["free"]
-        possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+        
+        if possibleMove:
+            possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+        
         for a in agents:
             self.map[a.state[0]][a.state[1]] = WorldStates["agent"]
 
@@ -139,3 +141,5 @@ class World:
 
         # Set the block's position to occupied on the map
         self.map[self.block[0]][self.block[1]] = WorldStates["block"]
+        
+        # print("PossibleMove is: ", possibleMove, "for action: ", agents[0].action)
