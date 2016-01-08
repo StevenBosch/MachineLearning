@@ -109,9 +109,9 @@ if __name__ == "__main__":
         tau -= (startTau-0.1) / epochs
         
         
-    #for index, agent in enumerate(agents):
-        #print("Agent: ", index)
-        #agent.print_policy(world)
+    for index, agent in enumerate(agents):
+        print("Agent: ", index)
+        agent.print_policy(world)
 
     print(tau)
 

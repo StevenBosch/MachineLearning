@@ -75,7 +75,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 2
+    epochs = 100
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
@@ -105,15 +105,11 @@ if __name__ == "__main__":
             [agent.updateQ(alpha, gamma) for agent in agents]
            
             world.time += 1
+        
         world.print_map()
         print(agents[0].state)
-        tau -= (startTau-0.1) / epochs
         
-    #for index, agent in enumerate(agents):
-        #print("Agent: ", index)
-        #agent.print_policy(world)
-
-    print(tau)
+        tau -= (startTau-0.1) / epochs
 
     # print(steps)
     plt.figure(1)
