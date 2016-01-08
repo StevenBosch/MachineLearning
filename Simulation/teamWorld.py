@@ -99,9 +99,9 @@ class World:
         yblock = self.block[0]
         xblock = self.block[1]
         possibleMove = False
-
+        
         for a in agents:
-            actionList = a.valueToActionList(a.nAgents)
+            actionList = a.valueToActionList(a.action)
             # Set the state of the block on "free",
             # so the agents see that as movable space, this is reset later on
             self.map[self.block[0]][self.block[1]] = WorldStates["free"]
@@ -115,27 +115,27 @@ class World:
             # we temporary have to set the agents position to free to check
             for a in agents:
                 self.map[a.state[0]][a.state[1]] = WorldStates["free"]
-            possibleMove = self.checkMove(yblock, xblock, agents[0].action)
+            if possibleMove:
+                possibleMove = self.checkMove(yblock, xblock, agents[0].action)
             for a in agents:
                 self.map[a.state[0]][a.state[1]] = WorldStates["agent"]
 
             # Time to move that block
             if possibleMove:
-                if agents[0].action == ag.Actions["left"]:
+                if actionList[0] == ag.Actions["left"]:
                     xblock -= 1
-                if agents[0].action == ag.Actions["right"]:
+                if actionList[0] == ag.Actions["right"]:
                     xblock += 1
-                if agents[0].action == ag.Actions["up"]:
+                if actionList[0] == ag.Actions["up"]:
                     yblock -= 1
-                if agents[0].action == ag.Actions["down"]:
+                if actionList[0] == ag.Actions["down"]:
                     yblock += 1
                 self.block = (yblock, xblock)
-
                 # Check to see if we reached the goal
                 if any(self.block == g for g in self.goals):
                     for agent in agents:
                         if agent.grasped:
-                            agent.reward = 10
+                            agent.reward += 10
                 # Move the agents
                 [agent.moveAgent(self) for agent in agents]
 

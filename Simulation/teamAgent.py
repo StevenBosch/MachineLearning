@@ -1,6 +1,7 @@
 """Our self module."""
 import numpy as np
 import world as w
+import copy
 
 """ Our actions are interpreted as the following integer values: """
 Actions = {
@@ -45,13 +46,15 @@ class Agent:
 
         # Action contains the action for every agent
         self.action = 0
-        self.prevGrasped = [0] * nAgents
         self.grasped = [0] * nAgents
+        self.prevGrasped = [0] * nAgents
         self.reward = 0
-        self.startState = self.state
+        self.startStates = startStates
         
     def reset(self):
-        self.state = self.startState
+        self.state = []
+        for i in range(self.nAgents):
+            self.state += list(self.startStates[i])
         self.grasped = [0] * self.nAgents
 
     def valueToActionList(self, value):
@@ -114,7 +117,11 @@ class Agent:
         action = self.action
         nextState = self.state
 
-        currentIndex = tuple(state + self.grasped + [self.action])
+        #print(state)
+        #print(action)
+        #print(self.grasped)
+        #print()
+        currentIndex = tuple(state + self.grasped + [action])
         curQ = self.q[currentIndex]
         nextIndex = tuple(state + self.grasped)
         nextQ = np.max(self.q[nextIndex])
@@ -147,25 +154,29 @@ class Agent:
         # Move a single agent if he can take his intended action
         actions = self.valueToActionList(self.action)
         for agent in range(self.nAgents):
-            y = self.state[2*agent]
-            x = self.state[2*agent+1]
-            self.prevGrasped[agent] = self.grasped[agent]
-            #print("y: ", y, " x: ", x, "action: ", actions[agent])
+            if not self.grasped[agent] or all(self.grasped):
+                y = self.state[2*agent]
+                x = self.state[2*agent+1]
+                #print(self.prevGrasped)
+                #print(self.grasped)
+                #print()
+                self.prevGrasped[agent] = self.grasped[agent]
+                #print("y: ", y, " x: ", x, "action: ", actions[agent])
 
-            if world.checkMove(y, x, actions[agent]):
-                if actions[agent] == Actions["left"]:
-                    x = x - 1
-                if actions[agent] == Actions["right"]:
-                    x = x + 1
-                if actions[agent] == Actions["up"]:
-                    y = y - 1
-                if actions[agent] == Actions["down"]:
-                    y = y + 1
-                if actions[agent] == Actions["grab"] and self.grasped == 0:
-                    self.grasped = 1
-                    self.reward += 1
+                if world.checkMove(y, x, actions[agent]):
+                    if actions[agent] == Actions["left"]:
+                        x -= 1
+                    if actions[agent] == Actions["right"]:
+                        x += 1
+                    if actions[agent] == Actions["up"]:
+                        y -= 1
+                    if actions[agent] == Actions["down"]:
+                        y += 1
+                    if actions[agent] == Actions["grab"] and self.grasped[agent] == 0:
+                        self.grasped[agent] = 1
+                        self.reward += 1
 
-                world.map[self.state[2*agent]][self.state[2*agent+1]] = w.WorldStates["free"]
-                world.map[y][x] = w.WorldStates["agent"]
-                self.state[2*agent] = y
-                self.state[2*agent+1] = x
+                    world.map[self.state[2*agent]][self.state[2*agent+1]] = w.WorldStates["free"]
+                    world.map[y][x] = w.WorldStates["agent"]
+                    self.state[2*agent] = y
+                    self.state[2*agent+1] = x
