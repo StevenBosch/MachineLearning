@@ -104,8 +104,12 @@ if __name__ == "__main__":
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
            
-            world.time += 1
-        
+            print("steps0 ", steps[0])
+            print("steps1 ", steps[1])
+            if steps[0][epoch] > 10000 or steps[1][epoch] > 10000:
+                world.print_map()
+            print()
+
         world.print_map()
         print(agents[0].state)
         
