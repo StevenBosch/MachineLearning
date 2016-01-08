@@ -113,12 +113,12 @@ class World:
 
             # Check if the blocks' move is possible
             # we temporary have to set the agents position to free to check
-            for a in agents:
-                self.map[a.state[0]][a.state[1]] = WorldStates["free"]
+            for i in range (agents[0].nAgents):
+                self.map[a.state[2*i]][a.state[2*i+1]] = WorldStates["free"]
             if possibleMove:
-                possibleMove = self.checkMove(yblock, xblock, agents[0].action)
-            for a in agents:
-                self.map[a.state[0]][a.state[1]] = WorldStates["agent"]
+                possibleMove = self.checkMove(yblock, xblock, actionList[0])
+            for i in range (agents[0].nAgents):
+                self.map[a.state[2*i]][a.state[2*i+1]] = WorldStates["agent"]
 
             # Time to move that block
             if possibleMove:
@@ -131,11 +131,11 @@ class World:
                 if actionList[0] == ag.Actions["down"]:
                     yblock += 1
                 self.block = (yblock, xblock)
+                print("moved")
                 # Check to see if we reached the goal
                 if any(self.block == g for g in self.goals):
                     for agent in agents:
-                        if agent.grasped:
-                            agent.reward += 10
+                        agent.reward += 10
                 # Move the agents
                 [agent.moveAgent(self) for agent in agents]
 
