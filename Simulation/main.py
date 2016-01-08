@@ -124,7 +124,7 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
 
     plt.figure(2)
-    smooth = math.ceil(epochs * 0.01)
+    smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs),
         np.convolve(steps[0], np.ones(smooth)/smooth, 'same'),
