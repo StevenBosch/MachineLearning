@@ -13,13 +13,20 @@ def updateWorld(agents, world, steps, epoch):
     If not all agents grabbed the block, move the single ones,
     else move the block if their actions correspond.
     """
-
     # Use for team agent
-    allGrasped = all(agents[0].grasped)
+    agents[0].allGrasped = all(agents[0].grasped)
     sameAction = len(np.unique(
         agents[0].valueToActionList(agents[0].action)
         )) == 1
-    if allGrasped:
+
+    #world.print_map()
+    #print("States: ", agents[0].state)
+    #print("Block: ", world.block)
+    #print("Actions: ", agents[0].valueToActionList(agents[0].action))
+    #print("Grasped: ", agents[0].grasped)
+    #print("allGrasped is ", allGrasped)
+
+    if agents[0].allGrasped:
         steps[1][epoch] += 1
         if sameAction:
             world.moveBlock(agents)
@@ -44,8 +51,6 @@ if __name__ == "__main__":
         print("You've selection action selection style: ", actionStyle)
 
     # Some parameters
-    # actionStyle = "greedy"
-    # actionStyle = "exponent"
     epsilon = 0.9
     startTau = 0.99
     tau = startTau
@@ -75,7 +80,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 100
+    epochs = 1000
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
@@ -104,9 +109,7 @@ if __name__ == "__main__":
             [agent.updateQ(alpha, gamma) for agent in agents]
            
             if steps[0][epoch] > 10000 or steps[1][epoch] > 10000:
-                world.print_map()
-
-        # world.print_map()
+                print("Took too long")
         
         tau -= (startTau-0.1) / epochs
         

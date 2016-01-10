@@ -47,7 +47,7 @@ class Agent:
         # Action contains the action for every agent
         self.action = 0
         self.grasped = [0] * nAgents
-        self.prevGrasped = [0] * nAgents
+        self.allGrasped = 0
         self.reward = 0
         self.startStates = startStates
         
@@ -150,10 +150,9 @@ class Agent:
         # Move a single agent if he can take his intended action
         actions = self.valueToActionList(self.action)
         for agent in range(self.nAgents):
-            if not self.grasped[agent] or all(self.grasped):
+            if not self.grasped[agent] or self.allGrasped:
                 y = self.state[2*agent]
                 x = self.state[2*agent+1]
-                self.prevGrasped[agent] = self.grasped[agent]
 
                 if world.checkMove(y, x, actions[agent]):
                     if actions[agent] == Actions["left"]:
