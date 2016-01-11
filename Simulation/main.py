@@ -31,15 +31,16 @@ def updateWorld(agents, world, steps, epoch):
 if __name__ == "__main__":
 
     # Parse the cla
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         sys.exit("""
-            Please execute this script with one argument \n
+            Please execute this script with two arguments \n
             for the action selection style, i.e.\n
-                "python3 main.py greedy" or \n
-                "python3 main.py exponent"
+                "python3 main.py greedy complex" or \n
+                "python3 main.py exponent simple"
         """)
     else:
         actionStyle = str(sys.argv[1])
+        environment = str(sys.argv[2])
         print("You've selection action selection style: ", actionStyle)
 
     # Some parameters
@@ -52,16 +53,24 @@ if __name__ == "__main__":
     gamma = 0.9
 
     # World parameters
-    rows = 5
-    columns = 5
-    goals = [(3, 1)]
-    walls = []
-    block = (0, 4)
-
-    # Starting positions of the agents,
-    # should be the same amount as the number agents
-    start = [(4, 4), (0, 0)]
-    numberOfAgents = len(start)
+    if environment == "complex":
+    	rows = 8
+    	columns = 8
+    	goals = [(6, 6)]
+    	walls = [(2,3),(3,3), (3,4), (3,5), (0,3),(0,4),(4,4),(5,4),(0,1),(1,1),(3,1),(4,1),(5,1),(6,1),(7,1)]
+    	block = (0, 5)
+    	# Starting positions of the agents,
+    	# should be the same amount as the number agents
+    	start = [(0, 0), (4, 0)]
+    	numberOfAgents = len(start)
+    else:
+    	rows = 5
+    	columns = 5
+    	goals = [(3, 1)]
+    	walls = []
+    	block = (0,4)
+    	start = [(0, 0), (3, 3)]
+    	numberOfAgents = len(start)
 
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
@@ -74,14 +83,14 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 1000
+    epochs = 2000
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
         print(epoch)
         # Set the agents to their starting positions
         for agent in agents:
-            agent.reset() 
+            agent.reset()
 
         # Create the world and everything in it
         world = w.World(rows, columns, goals, walls, block, start)
@@ -102,13 +111,13 @@ if __name__ == "__main__":
             world = updateWorld(agents, world, steps, epoch)
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
-           
+
             if(epoch == epochs - 1):
                 world.print_map()
-        
+
         tau -= (startTau-0.1) / epochs
-        
-        
+
+
     for index, agent in enumerate(agents):
         print("Agent: ", index)
         agent.print_policy(world)
