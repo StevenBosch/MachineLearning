@@ -47,6 +47,7 @@ class Agent:
         # Action contains the action for every agent
         self.action = 0
         self.grasped = [0] * nAgents
+        self.prevGrasped = [0] * nAgents
         self.allGrasped = 0
         self.reward = 0
         self.startStates = startStates
@@ -117,34 +118,14 @@ class Agent:
         action = self.action
         nextState = self.state
 
-        currentIndex = tuple(state + self.grasped + [action])
+        currentIndex = tuple(state + self.prevGrasped + [action])
         curQ = self.q[currentIndex]
-        nextIndex = tuple(state + self.grasped)
+        nextIndex = tuple(nextState + self.grasped)
         nextQ = np.max(self.q[nextIndex])
 
         update = alpha * (self.reward + gamma * nextQ - curQ)
         self.q[currentIndex] = curQ + update
         self.reward = 0
-
-    def print_q(self):
-        """ Print the Q table """
-        print(self.q)
-
-    def print_policy(self, world):
-        for g in range(2):
-            print("Policy for grasped", g, ":")
-            print("# "*(world.columns+2))
-            for y in range(world.rows):
-                print("#", end=' ')
-                for x in range(world.columns):
-                    if np.argmax(self.q[y, x, :, g]) == 0.0:
-                        print("x", end=" ")
-                    else:
-                        print(Actions3[np.argmax(self.q[y, x, :, g])], end=" ")
-
-                print("#")
-            print("# "*(world.columns+2))
-            print("\n")
 
     def moveAgent(self, world):
         # Move a single agent if he can take his intended action
@@ -171,3 +152,24 @@ class Agent:
                     world.map[y][x] = w.WorldStates["agent"]
                     self.state[2*agent] = y
                     self.state[2*agent+1] = x
+
+
+    def print_q(self):
+        """ Print the Q table """
+        print(self.q)
+
+    def print_policy(self, world):
+        for g in range(2):
+            print("Policy for grasped", g, ":")
+            print("# "*(world.columns+2))
+            for y in range(world.rows):
+                print("#", end=' ')
+                for x in range(world.columns):
+                    if np.argmax(self.q[y, x, g, :]) == 0.0:
+                        print("x", end=" ")
+                    else:
+                        print(Actions3[np.argmax(self.q[y, x, g, :])], end=" ")
+
+                print("#")
+            print("# "*(world.columns+2))
+            print("\n")

@@ -59,8 +59,6 @@ if __name__ == "__main__":
     	goals = [(6, 6)]
     	walls = [(2,3),(3,3), (3,4), (3,5), (0,3),(0,4),(4,4),(5,4),(0,1),(1,1),(3,1),(4,1),(5,1),(6,1),(7,1)]
     	block = (0, 5)
-    	# Starting positions of the agents,
-    	# should be the same amount as the number agents
     	start = [(0, 0), (4, 0)]
     	numberOfAgents = len(start)
     else:
@@ -75,7 +73,6 @@ if __name__ == "__main__":
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
               for i in range(numberOfAgents)]
-    #agents = [ag.Agent(start, rows, columns, len(start))]
 
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
@@ -88,6 +85,7 @@ if __name__ == "__main__":
 
     for epoch in range(epochs):
         print(epoch)
+        
         # Set the agents to their starting positions
         for agent in agents:
             agent.reset()
@@ -122,8 +120,6 @@ if __name__ == "__main__":
         print("Agent: ", index)
         agent.print_policy(world)
 
-    print(tau)
-
     # print(steps)
     plt.figure(1)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
@@ -131,20 +127,22 @@ if __name__ == "__main__":
     plt.xlabel('Epoch')
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
-
+    plt.draw()
+    plt.savefig('SingleQ.png')
+    
     plt.figure(2)
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
-        range(epochs),
-        np.convolve(steps[0], np.ones(smooth)/smooth, 'same'),
+        range(epochs-smooth+1),
+        np.convolve(steps[0], np.ones(smooth)/smooth, 'valid'),
         'r-',
-        range(epochs),
-        np.convolve(steps[1], np.ones(smooth)/smooth, 'same'),
+        range(epochs-smooth+1),
+        np.convolve(steps[1], np.ones(smooth)/smooth, 'valid'),
         'b-'
     )
     plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
     plt.xlabel('Epoch')
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
-
-    plt.show()
+    plt.draw()
+    plt.savefig('SingleQ_smoothed.png')
