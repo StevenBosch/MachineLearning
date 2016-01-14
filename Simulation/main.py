@@ -1,9 +1,7 @@
 """Our main module."""
 import sys
 import world as w
-#import teamWorld as w
 import agent as ag
-#import teamAgent as ag
 import numpy as np
 import matplotlib.pyplot as plt
 import math
