@@ -41,6 +41,9 @@ class Agent:
         self.state = self.startState
         self.grasped = 0
 
+    def resetQ(self, world):
+        self.q = np.zeros((world.rows, world.columns, len(Actions), 2))
+
     def chooseAction(self, tau, world):
         """ Chooses the best possible action, given a value of tau:
             Divide each number by the total sum, to achieve probabilities

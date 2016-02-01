@@ -41,6 +41,7 @@ if __name__ == "__main__":
         actionStyle = str(sys.argv[1])
         environment = str(sys.argv[2])
         print("You've selection action selection style: ", actionStyle)
+        print("You've selection world: ", environment)
 
     # Some parameters
     epsilon = 0.9
@@ -74,11 +75,10 @@ if __name__ == "__main__":
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
     world.add_objects()
-    world.print_map()
 
     # Simulation settings
     runs = 1
-    trainingSteps = 2500
+    trainingSteps = 200
     testSteps = 100
     epochs = trainingSteps + testSteps
 
@@ -88,6 +88,9 @@ if __name__ == "__main__":
     testResults = np.zeros((2, testSteps))
 
     for run in range(runs):
+        print(run)
+        for agent in agents:
+            agent.resetQ(world)
         for epoch in range(epochs):
             if epoch == 0:
                 print("Training phase")
@@ -100,43 +103,50 @@ if __name__ == "__main__":
             for agent in agents:
                 agent.reset()
 
-                while not any([world.block == g for g in goals]):
-                    # Save the current state
-                    for agent in agents:
-                        agent.prevState = agent.state
+            # Create the world and everything in it
+            world = w.World(rows, columns, goals, walls, block, start)
+            world.add_objects()
 
-                    # Choose an action for every agent
-                    if actionStyle == "greedy":
-                        [agent.chooseGreedyAction(epsilon, world) for agent in agents]
-                    else:
-                        [agent.chooseAction(tau, world) for agent in agents]
+            while not any([world.block == g for g in goals]):
+                # Save the current state
+                for agent in agents:
+                    agent.prevState = agent.state
 
-                    # Perform the chosen actions (and obtain rewards)
-                    world = updateWorld(agents, world, steps, epoch)
-                    # Update the Q-values of the agents
+                # Choose an action for every agent
+                if actionStyle == "greedy":
+                    [agent.chooseGreedyAction(epsilon, world) for agent in agents]
+                else:
+                    [agent.chooseAction(tau, world) for agent in agents]
+
+                # Perform the chosen actions (and obtain rewards)
+                world = updateWorld(agents, world, steps, epoch)
+                # Update the Q-values of the agents
+                if epoch < trainingSteps:
                     [agent.updateQ(alpha, gamma) for agent in agents]
 
-                    if epoch == epochs - 1:
-                        world.print_map()
+                if epoch == epochs - 1:
+                    world.print_map()
 
-                tau -= (startTau-0.1) / epochs
+            tau -= (startTau-0.1) / epochs
 
-                if epoch >= 20:
-                    stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
-                    stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
+            # Store the standard deviations
+            if epoch >= 20 and epoch < trainingSteps + 1:
+                stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
+                stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
 
-                    if environment == "complex":
-                        if stdev[0][epoch] < 4 and convergence[0][run] == 0:
-                            convergence[0][run] = epoch
-                        if stdev[0][epoch] < 2 and convergence[1][run] == 0:
-                            convergence[1][run] = epoch
-
-    print("Convergence at grabbed:", convergence[0])
-    print("Convergence grabbed:", [convergence[1]])
+                # At convergence of std, store the epoch of convergence
+                if environment == "complex":
+                    if stdev[0][epoch] < 5 and convergence[0][run] == 0:
+                        convergence[0][run] = epoch
+                    if stdev[1][epoch] < 2 and convergence[1][run] == 0:
+                        convergence[1][run] = epoch
 
     for index, agent in enumerate(agents):
         print("Agent: ", index)
         agent.print_policy(world)
+
+    print("Convergence at not grabbed:", convergence[0])
+    print("Convergence grabbed:", convergence[1])
 
     plt.figure(1)
     plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
@@ -146,6 +156,7 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.show()
+    plt.savefig('Stdev.png')
 
     plt.figure(2)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
@@ -157,7 +168,6 @@ if __name__ == "__main__":
     plt.savefig('SingleQ.png')
 
     plt.figure(3)
-
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs-smooth+1),
@@ -176,7 +186,7 @@ if __name__ == "__main__":
 
     testResults[0] = steps[0,-testSteps:]
     testResults[1] = steps[1,-testSteps:]
-    plt.figure(3)
+    plt.figure(4)
     plt.plot(
         range(testSteps), testResults[0], 'r-',
         range(testSteps), testResults[1], 'b-')
@@ -185,9 +195,9 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('TeamQTest.png')
+    plt.savefig('SingleQTest.png')
 
-    plt.figure(4)
+    plt.figure(5)
     smooth = math.ceil(testSteps * 0.1)
     plt.plot(
         range(testSteps-smooth+1),
@@ -202,4 +212,4 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('TeamQTest_smoothed.png')
+    plt.savefig('SingleQTest_smoothed.png')
