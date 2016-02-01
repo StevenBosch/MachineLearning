@@ -5,6 +5,7 @@ import agent as ag
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import statistics
 
 
 def updateWorld(agents, world, steps, epoch):
@@ -42,8 +43,6 @@ if __name__ == "__main__":
         print("You've selection action selection style: ", actionStyle)
 
     # Some parameters
-    # actionStyle = "greedy"
-    # actionStyle = "exponent"
     epsilon = 0.9
     startTau = 0.99
     tau = startTau
@@ -78,48 +77,73 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 2000
+    epochs = 3000
+    runs = 50
     steps = np.zeros((2, epochs))
+    convergence = np.zeros((2, runs))
+    stdev = np.zeros((2, epochs))
+    for run in range(runs):
+        print(run)
+        for epoch in range(epochs):
+            #print(epoch)
 
-    for epoch in range(epochs):
-        print(epoch)
-        
-        # Set the agents to their starting positions
-        for agent in agents:
-            agent.reset()
-
-        # Create the world and everything in it
-        world = w.World(rows, columns, goals, walls, block, start)
-        world.add_objects()
-
-        while not any([world.block == g for g in goals]):
-            # Save the current state
+            # Set the agents to their starting positions
             for agent in agents:
-                agent.prevState = agent.state
+                agent.reset()
 
-            # Choose an action for every agent
-            if actionStyle == "greedy":
-                [agent.chooseGreedyAction(epsilon, world) for agent in agents]
-            else:
-                [agent.chooseAction(tau, world) for agent in agents]
+            # Create the world and everything in it
+            world = w.World(rows, columns, goals, walls, block, start)
+            world.add_objects()
 
-            # Perform the chosen actions (and obtain rewards)
-            world = updateWorld(agents, world, steps, epoch)
-            # Update the Q-values of the agents
-            [agent.updateQ(alpha, gamma) for agent in agents]
+            while not any([world.block == g for g in goals]):
+                # Save the current state
+                for agent in agents:
+                    agent.prevState = agent.state
 
-            if(epoch == epochs - 1):
-                world.print_map()
+                # Choose an action for every agent
+                if actionStyle == "greedy":
+                    [agent.chooseGreedyAction(epsilon, world) for agent in agents]
+                else:
+                    [agent.chooseAction(tau, world) for agent in agents]
 
-        tau -= (startTau-0.1) / epochs
+                # Perform the chosen actions (and obtain rewards)
+                world = updateWorld(agents, world, steps, epoch)
+                # Update the Q-values of the agents
+                [agent.updateQ(alpha, gamma) for agent in agents]
 
+                if(epoch == epochs - 1):
+                    world.print_map()
+
+            tau -= (startTau-0.1) / epochs
+
+            if epoch >= 20:
+                stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
+                stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
+
+                if environment == "complex":
+                    if stdev[0][epoch] < 4:
+                        convergence[0][run] = epoch
+                    if stdev[0][epoch] < 2:
+                        convergence[1][run] = epoch
+
+    print("Convergence at grabbed:", convergence[0])
+    print("Convergence grabbed:", [convergence[1]])
 
     for index, agent in enumerate(agents):
         print("Agent: ", index)
         agent.print_policy(world)
 
-    # print(steps)
     plt.figure(1)
+    plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
+    plt.title('Standard deviation over 20 epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Standard deviation')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.show()
+
+    # print(steps)
+    plt.figure(2)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
     plt.title('Steps per epoch')
     plt.xlabel('Epoch')
@@ -128,7 +152,7 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('SingleQ.png')
     
-    plt.figure(2)
+    plt.figure(3)
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs-smooth+1),

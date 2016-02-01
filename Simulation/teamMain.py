@@ -78,7 +78,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 2000
+    epochs = 5000
     steps = np.zeros((2, epochs))
 
     for epoch in range(epochs):
@@ -109,9 +109,6 @@ if __name__ == "__main__":
             world = updateWorld(agents, world, steps, epoch)
             # Update the Q-values of the agents
             [agent.updateQ(alpha, gamma) for agent in agents]
-           
-            if steps[0][epoch] > 10000 or steps[1][epoch] > 10000:
-                print("Took too long")
         
         tau -= (startTau-0.1) / epochs
     
@@ -123,6 +120,7 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
+    plt.show()
     plt.savefig('TeamQ.png')
     
     plt.figure(2)
@@ -140,4 +138,5 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
+    plt.show()
     plt.savefig('TeamQ_smoothed.png')
