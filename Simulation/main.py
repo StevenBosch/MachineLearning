@@ -51,21 +51,21 @@ if __name__ == "__main__":
 
     # World parameters
     if environment == "complex":
-    	rows = 8
-    	columns = 8
-    	goals = [(6, 6)]
-    	walls = [(2,3),(3,3), (3,4), (3,5), (0,3),(0,4),(4,4),(5,4),(0,1),(1,1),(3,1),(4,1),(5,1),(6,1),(7,1)]
-    	block = (0, 5)
-    	start = [(0, 0), (4, 0)]
-    	numberOfAgents = len(start)
+        rows = 8
+        columns = 8
+        goals = [(6, 6)]
+        walls = [(2,3),(3,3), (3,4), (3,5), (0,3),(0,4),(4,4),(5,4),(0,1),(1,1),(3,1),(4,1),(5,1),(6,1),(7,1)]
+        block = (0, 5)
+        start = [(0, 0), (4, 0)]
+        numberOfAgents = len(start)
     else:
-    	rows = 5
-    	columns = 5
-    	goals = [(3, 1)]
-    	walls = []
-    	block = (0,4)
-    	start = [(0, 0), (3, 3)]
-    	numberOfAgents = len(start)
+        rows = 5
+        columns = 5
+        goals = [(3, 1)]
+        walls = []
+        block = (0,4)
+        start = [(0, 0), (3, 3)]
+        numberOfAgents = len(start)
 
     # Create the agents
     agents = [ag.Agent(start[i], rows, columns)
@@ -77,54 +77,59 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 3000
-    runs = 50
+    runs = 1
+    trainingSteps = 2500
+    testSteps = 100
+    epochs = trainingSteps + testSteps
+
     steps = np.zeros((2, epochs))
     convergence = np.zeros((2, runs))
     stdev = np.zeros((2, epochs))
+    testResults = np.zeros((2, testSteps))
+
     for run in range(runs):
-        print(run)
         for epoch in range(epochs):
-            #print(epoch)
+            if epoch == 0:
+                print("Training phase")
+            if (epoch % 20 == 0):
+                print(epoch)
+            if epoch == trainingSteps:
+                print("Testing phase")
 
             # Set the agents to their starting positions
             for agent in agents:
                 agent.reset()
 
-            # Create the world and everything in it
-            world = w.World(rows, columns, goals, walls, block, start)
-            world.add_objects()
+                while not any([world.block == g for g in goals]):
+                    # Save the current state
+                    for agent in agents:
+                        agent.prevState = agent.state
 
-            while not any([world.block == g for g in goals]):
-                # Save the current state
-                for agent in agents:
-                    agent.prevState = agent.state
+                    # Choose an action for every agent
+                    if actionStyle == "greedy":
+                        [agent.chooseGreedyAction(epsilon, world) for agent in agents]
+                    else:
+                        [agent.chooseAction(tau, world) for agent in agents]
 
-                # Choose an action for every agent
-                if actionStyle == "greedy":
-                    [agent.chooseGreedyAction(epsilon, world) for agent in agents]
-                else:
-                    [agent.chooseAction(tau, world) for agent in agents]
+                    # Perform the chosen actions (and obtain rewards)
+                    world = updateWorld(agents, world, steps, epoch)
+                    # Update the Q-values of the agents
+                    [agent.updateQ(alpha, gamma) for agent in agents]
 
-                # Perform the chosen actions (and obtain rewards)
-                world = updateWorld(agents, world, steps, epoch)
-                # Update the Q-values of the agents
-                [agent.updateQ(alpha, gamma) for agent in agents]
+                    if epoch == epochs - 1:
+                        world.print_map()
 
-                if(epoch == epochs - 1):
-                    world.print_map()
+                tau -= (startTau-0.1) / epochs
 
-            tau -= (startTau-0.1) / epochs
+                if epoch >= 20:
+                    stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
+                    stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
 
-            if epoch >= 20:
-                stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
-                stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
-
-                if environment == "complex":
-                    if stdev[0][epoch] < 4:
-                        convergence[0][run] = epoch
-                    if stdev[0][epoch] < 2:
-                        convergence[1][run] = epoch
+                    if environment == "complex":
+                        if stdev[0][epoch] < 4 and convergence[0][run] == 0:
+                            convergence[0][run] = epoch
+                        if stdev[0][epoch] < 2 and convergence[1][run] == 0:
+                            convergence[1][run] = epoch
 
     print("Convergence at grabbed:", convergence[0])
     print("Convergence grabbed:", [convergence[1]])
@@ -142,7 +147,6 @@ if __name__ == "__main__":
     plt.draw()
     plt.show()
 
-    # print(steps)
     plt.figure(2)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
     plt.title('Steps per epoch')
@@ -151,8 +155,9 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('SingleQ.png')
-    
+
     plt.figure(3)
+
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs-smooth+1),
@@ -168,3 +173,33 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('SingleQ_smoothed.png')
+
+    testResults[0] = steps[0,-testSteps:]
+    testResults[1] = steps[1,-testSteps:]
+    plt.figure(3)
+    plt.plot(
+        range(testSteps), testResults[0], 'r-',
+        range(testSteps), testResults[1], 'b-')
+    plt.title('Steps per epoch (Only the last %s)'%testSteps)
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('TeamQTest.png')
+
+    plt.figure(4)
+    smooth = math.ceil(testSteps * 0.1)
+    plt.plot(
+        range(testSteps-smooth+1),
+        np.convolve(testResults[0], np.ones(smooth)/smooth, 'valid'),
+        'r-',
+        range(testSteps-smooth+1),
+        np.convolve(testResults[1], np.ones(smooth)/smooth, 'valid'),
+        'b-'
+    )
+    plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('TeamQTest_smoothed.png')
