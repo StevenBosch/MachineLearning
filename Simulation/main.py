@@ -78,12 +78,20 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    epochs = 2000
+    trainingSteps = 20000
+    testSteps = 100
+    epochs = trainingSteps + testSteps
     steps = np.zeros((2, epochs))
+    testResults = np.zeros((2, testSteps)))
 
     for epoch in range(epochs):
-        print(epoch)
-        
+        if epoch == 0:
+            print("Training phase")
+        if (epoch % 20 == 0):
+            print(epoch)
+        if epoch == trainingSteps:
+            print("Testing phase")
+
         # Set the agents to their starting positions
         for agent in agents:
             agent.reset()
@@ -127,7 +135,7 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('SingleQ.png')
-    
+
     plt.figure(2)
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
@@ -144,3 +152,33 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('SingleQ_smoothed.png')
+
+    testResults[0] = steps[0,-testSteps:]
+    testResults[1] = steps[1,-testSteps:]
+    plt.figure(3)
+    plt.plot(
+        range(testSteps), testResults[0], 'r-',
+        range(testSteps), testResults[1], 'b-')
+    plt.title('Steps per epoch (Only the last %s)'%testSteps)
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('TeamQTest.png')
+
+    plt.figure(4)
+    smooth = math.ceil(testSteps * 0.1)
+    plt.plot(
+        range(testSteps-smooth+1),
+        np.convolve(testResults[0], np.ones(smooth)/smooth, 'valid'),
+        'r-',
+        range(testSteps-smooth+1),
+        np.convolve(testResults[1], np.ones(smooth)/smooth, 'valid'),
+        'b-'
+    )
+    plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
+    plt.xlabel('Epoch')
+    plt.ylabel('Steps')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('TeamQTest_smoothed.png')

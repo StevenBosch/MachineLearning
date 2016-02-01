@@ -1,4 +1,4 @@
-# Latex Files 
+# Latex Files
 *.aux
 *.glo
 *.idx
@@ -83,4 +83,5 @@ docs/_build/
 # PyBuilder
 target/
 
-.idea*
+*.idea
+*.png
