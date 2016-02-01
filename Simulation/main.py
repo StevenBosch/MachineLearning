@@ -78,7 +78,7 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    trainingSteps = 20000
+    trainingSteps = 200
     testSteps = 100
     epochs = trainingSteps + testSteps
     steps = np.zeros((2, epochs))
@@ -114,7 +114,8 @@ if __name__ == "__main__":
             # Perform the chosen actions (and obtain rewards)
             world = updateWorld(agents, world, steps, epoch)
             # Update the Q-values of the agents
-            [agent.updateQ(alpha, gamma) for agent in agents]
+            if epoch < trainingSteps:
+                [agent.updateQ(alpha, gamma) for agent in agents]
 
             if(epoch == epochs - 1):
                 world.print_map()
