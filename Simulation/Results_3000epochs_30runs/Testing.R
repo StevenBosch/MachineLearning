@@ -6,10 +6,10 @@ t.test(single$Grabbed, team$Grabbed)
 
 par(mfrow=c(1,2))
 
-plot(single$Not_grabbed, col="blue", pch=16)
+plot(single$Not_grabbed, ylim = c(0,3000), col="blue", pch=16, main = "Epochs before convergence (not grabbed)")
 points(team$Not_grabbed, col="red", pch=17)
 legend("bottomright", c("single", "team"), col=c("blue", "red"),pch=c(16, 17))
 
-plot(single$Grabbed, col="blue", pch=16)
+plot(single$Grabbed, col="blue", ylim = c(0,3000), pch=16, main = "Epochs before convergence (grabbed)")
 points(team$Grabbed, col="red", pch=17)
-legend("bottomright", c("single", "team"), col=c("blue", "red"),pch=c(16, 17))
+legend("topright", c("single", "team"), col=c("blue", "red"),pch=c(16, 17))
