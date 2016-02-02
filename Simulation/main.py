@@ -72,7 +72,7 @@ if __name__ == "__main__":
     world.add_objects()
 
     # Simulation settings
-    runs = 25
+    runs = 30
     trainingSteps = 3000
     testSteps = 1
     epochs = trainingSteps + testSteps
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         for epoch in range(epochs):
             if epoch == 0:
                 print("Training phase")
-            if (epoch % 500 == 0):
+            if epoch % 500 == 0:
                 print(epoch)
             if epoch == trainingSteps:
                 print("Testing phase")
@@ -123,6 +123,7 @@ if __name__ == "__main__":
 
                 # Perform the chosen actions (and obtain rewards)
                 world = updateWorld(agents, world, steps, epoch)
+
                 # Update the Q-values of the agents
                 if epoch < trainingSteps:
                     [agent.updateQ(alpha, gamma) for agent in agents]
@@ -148,11 +149,10 @@ if __name__ == "__main__":
         print("Agent: ", index)
         agent.print_policy(world)
 
-
-    with open("Convergence.csv", "w") as conv:
-        writer = csv.writer(conv, delimiter = '\t')
+    with open("Convergence_single.csv", "w") as conv:
+        writer = csv.writer(conv, delimiter='\t')
         writer.writerow(["Not_grabbed\tGrabbed"])
-        writer.writerows(list(zip(convergence[0],convergence[1])))
+        writer.writerows(list(zip(convergence[0], convergence[1])))
 
     plt.figure(1)
     plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     plt.ylabel('Standard deviation')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('Stdev.png')
+    plt.savefig('Stdev_single.png')
 
     plt.figure(2)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
@@ -219,7 +219,6 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('SingleQTest_smoothed.png')
 
-
     plt.figure(6)
     plt.plot(range(runs), convergence[0], 'r-', range(runs), convergence[1], 'b-')
     plt.title('Number of epochs before convergence')
@@ -227,4 +226,4 @@ if __name__ == "__main__":
     plt.ylabel('Number epochs')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('Convergence.png')
+    plt.savefig('Convergence_single.png')

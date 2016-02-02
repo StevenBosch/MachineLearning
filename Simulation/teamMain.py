@@ -5,6 +5,8 @@ import teamAgent as ag
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import statistics
+import csv
 
 
 def updateWorld(agents, world, steps, epoch):
@@ -46,8 +48,6 @@ if __name__ == "__main__":
 
     # Some parameters
     epsilon = 0.9
-    startTau = 0.99
-    tau = startTau
     alpha = 0.1
     gamma = 0.9
 
@@ -69,58 +69,87 @@ if __name__ == "__main__":
         start = [(0, 0), (3, 3)]
         numberOfAgents = len(start)
 
-    # Create the agents
-    agents = [ag.Agent(start, rows, columns, len(start))]
-
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
     world.add_objects()
     world.print_map()
 
     # Simulation settings
-    trainingSteps = 200
-    testSteps = 100
+    runs = 1
+    trainingSteps = 3000
+    testSteps = 1
     epochs = trainingSteps + testSteps
-    steps = np.zeros((2, epochs))
-    testResults = np.zeros((2, testSteps))
 
-    for epoch in range(epochs):
-        if epoch == 0:
-            print("Training phase")
-        if (epoch % 20 == 0):
-            print(epoch)
-        if epoch == trainingSteps:
-            print("Testing phase")
+    convergence = np.zeros((2, runs))
 
-        # Set the agents to their starting positions
-        for agent in agents:
-            agent.reset()
+    for run in range(runs):
+        print(run)
 
-        # Create the world and everything in it
-        world = w.World(rows, columns, goals, walls, block, start)
-        world.add_objects()
-        while not any([world.block == g for g in goals]):
-            # Save the previous state and grasped (this has to be done per element, else it becomes a pointer)
+       # Create the agents
+        agents = [ag.Agent(start, rows, columns, len(start))]
+
+        stdev = np.zeros((2, epochs))
+        testResults = np.zeros((2, testSteps))
+        steps = np.zeros((2, epochs))
+
+        startTau = 0.99
+        tau = startTau
+
+        for epoch in range(epochs):
+            if epoch == 0:
+                print("Training phase")
+            if (epoch % 500 == 0):
+                print(epoch)
+            if epoch == trainingSteps:
+                print("Testing phase")
+
+            # Set the agents to their starting positions
             for agent in agents:
-                for number in range(len(start)):
-                    agent.prevState[number*2] = agent.state[number*2]
-                    agent.prevState[number*2+1] = agent.state[number*2+1]
-                    agent.prevGrasped[number] = agent.grasped[number]
+                agent.reset()
 
-            # Choose an action for every agent
-            if actionStyle == "greedy":
-                [agent.chooseGreedyAction(epsilon, world) for agent in agents]
-            else:
-                [agent.chooseAction(tau, world) for agent in agents]
+            # Create the world and everything in it
+            world = w.World(rows, columns, goals, walls, block, start)
+            world.add_objects()
 
-            # Perform the chosen actions (and obtain rewards)
-            world = updateWorld(agents, world, steps, epoch)
-            # Update the Q-values of the agents
-            if epoch < trainingSteps:
-                [agent.updateQ(alpha, gamma) for agent in agents]
+            while not any([world.block == g for g in goals]):
+                # Save the previous state and grasped (this has to be done per element, else it becomes a pointer)
+                for agent in agents:
+                    for number in range(len(start)):
+                        agent.prevState[number*2] = agent.state[number*2]
+                        agent.prevState[number*2+1] = agent.state[number*2+1]
+                        agent.prevGrasped[number] = agent.grasped[number]
 
-        tau -= (startTau-0.1) / epochs
+                # Choose an action for every agent
+                if actionStyle == "greedy":
+                    [agent.chooseGreedyAction(epsilon, world) for agent in agents]
+                else:
+                    [agent.chooseAction(tau, world) for agent in agents]
 
+                # Perform the chosen actions (and obtain rewards)
+                world = updateWorld(agents, world, steps, epoch)
+
+                # Update the Q-values of the agents
+                if epoch < trainingSteps:
+                    [agent.updateQ(alpha, gamma) for agent in agents]
+
+            tau -= (startTau-0.1) / epochs
+
+            # Store the standard deviations
+            if epoch >= 20 and epoch < trainingSteps + 1:
+                stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
+                stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
+
+                # At convergence of std, store the epoch of convergence
+                if environment == "complex":
+                    if stdev[0][epoch] < 7 and convergence[0][run] == 0:
+                        convergence[0][run] = epoch
+                    if stdev[1][epoch] < 2 and convergence[1][run] == 0:
+                        convergence[1][run] = epoch
+
+    with open("Convergence_team.csv", "w") as conv:
+        writer = csv.writer(conv, delimiter='\t')
+        writer.writerow(["Not_grabbed\tGrabbed"])
+        writer.writerows(list(zip(convergence[0], convergence[1])))
 
     plt.figure(1)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
@@ -129,7 +158,6 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.show()
     plt.savefig('TeamQ.png')
 
     plt.figure(2)
@@ -147,11 +175,11 @@ if __name__ == "__main__":
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.show()
     plt.savefig('TeamQ_smoothed.png')
 
     testResults[0] = steps[0,-testSteps:]
     testResults[1] = steps[1,-testSteps:]
+
     plt.figure(3)
     plt.plot(
         range(testSteps), testResults[0], 'r-',
@@ -179,3 +207,21 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('TeamQTest_smoothed.png')
+
+    plt.figure(5)
+    plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
+    plt.title('Standard deviation over 20 epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Standard deviation')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('Stdev_team.png')
+
+    plt.figure(6)
+    plt.plot(range(runs), convergence[0], 'r-', range(runs), convergence[1], 'b-')
+    plt.title('Number of epochs before convergence')
+    plt.xlabel('Run')
+    plt.ylabel('Number epochs')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('Convergence_team.png')
