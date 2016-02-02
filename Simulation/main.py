@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import statistics
+import csv
 
 
 def updateWorld(agents, world, steps, epoch):
@@ -45,8 +46,6 @@ if __name__ == "__main__":
 
     # Some parameters
     epsilon = 0.9
-    startTau = 0.99
-    tau = startTau
     alpha = 0.1
     gamma = 0.9
 
@@ -68,33 +67,37 @@ if __name__ == "__main__":
         start = [(0, 0), (3, 3)]
         numberOfAgents = len(start)
 
-    # Create the agents
-    agents = [ag.Agent(start[i], rows, columns)
-              for i in range(numberOfAgents)]
-
     # Create the world and everything in it
     world = w.World(rows, columns, goals, walls, block, start)
     world.add_objects()
 
     # Simulation settings
-    runs = 1
-    trainingSteps = 200
-    testSteps = 100
+    runs = 25
+    trainingSteps = 3000
+    testSteps = 1
     epochs = trainingSteps + testSteps
 
-    steps = np.zeros((2, epochs))
     convergence = np.zeros((2, runs))
-    stdev = np.zeros((2, epochs))
-    testResults = np.zeros((2, testSteps))
 
     for run in range(runs):
         print(run)
-        for agent in agents:
-            agent.resetQ(world)
+
+        # Create the agents
+        agents = [ag.Agent(start[i], rows, columns)
+                  for i in range(numberOfAgents)]
+
+        stdev = np.zeros((2, epochs))
+        testResults = np.zeros((2, testSteps))
+        steps = np.zeros((2, epochs))
+
+        startTau = 0.99
+        tau = startTau
+        #for agent in agents:
+        #    agent.resetQ(world)
         for epoch in range(epochs):
             if epoch == 0:
                 print("Training phase")
-            if (epoch % 20 == 0):
+            if (epoch % 500 == 0):
                 print(epoch)
             if epoch == trainingSteps:
                 print("Testing phase")
@@ -136,7 +139,7 @@ if __name__ == "__main__":
 
                 # At convergence of std, store the epoch of convergence
                 if environment == "complex":
-                    if stdev[0][epoch] < 5 and convergence[0][run] == 0:
+                    if stdev[0][epoch] < 7 and convergence[0][run] == 0:
                         convergence[0][run] = epoch
                     if stdev[1][epoch] < 2 and convergence[1][run] == 0:
                         convergence[1][run] = epoch
@@ -145,8 +148,11 @@ if __name__ == "__main__":
         print("Agent: ", index)
         agent.print_policy(world)
 
-    print("Convergence at not grabbed:", convergence[0])
-    print("Convergence grabbed:", convergence[1])
+
+    with open("Convergence.csv", "w") as conv:
+        writer = csv.writer(conv, delimiter = '\t')
+        writer.writerow(["Not_grabbed\tGrabbed"])
+        writer.writerows(list(zip(convergence[0],convergence[1])))
 
     plt.figure(1)
     plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
@@ -155,7 +161,6 @@ if __name__ == "__main__":
     plt.ylabel('Standard deviation')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.show()
     plt.savefig('Stdev.png')
 
     plt.figure(2)
@@ -213,3 +218,13 @@ if __name__ == "__main__":
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
     plt.savefig('SingleQTest_smoothed.png')
+
+
+    plt.figure(6)
+    plt.plot(range(runs), convergence[0], 'r-', range(runs), convergence[1], 'b-')
+    plt.title('Number of epochs before convergence')
+    plt.xlabel('Run')
+    plt.ylabel('Number epochs')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('Convergence.png')
