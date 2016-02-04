@@ -2,7 +2,9 @@ single = read.csv("ConvergenceSingle.csv", sep="\t")
 team = read.csv("ConvergenceTeam.csv", sep="\t")
 
 t.test(single$Not_grabbed, team$Not_grabbed)
+t.test(single$Grabbed-single$Not_grabbed, team$Grabbed-team$Not_grabbed)
 t.test(single$Grabbed, team$Grabbed)
+
 
 par(mfrow=c(1,2))
 
