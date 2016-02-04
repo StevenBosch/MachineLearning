@@ -1,2 +1,10 @@
 \section{Discussion}
+Looking at the results we can observe that team Q-learning converged too a solution faster than single Q-learning. This was the case in the first stage of the simulation. On the other hand, the single Q-learning solution turned out more optimal than its counterpart, with on average 6.5 less steps than the team Q-learning solution. These are however, the overall results of the simulation. It is easier and more insightful to discuss the more specific phenomena we encountered in the results.
 
+First, let us look into the two stages of the simulation separately. Before the block has been grabbed we see little difference between both of the algorithms in the average number of epochs it takes before convergence (2609 vs. 2512), but we do see a significant difference in the average number of steps taken in the final solution (31.9 vs. 38.1). This difference is quite considerable. 6.5 Steps on a total of $\pm 35.15$ steps comes down to approximately $18.5\%$. If the state space would be of a higher order, this could grow to become a considerable drawback to using this algorithm. The reason that team Q-learning gives a significantly less optimal solution might be that \textbf{REASONS!!!!!!}
+
+In the second stage of the simulation, we see a different phenomenon. Instead of a difference in solution (this turned out insignificant), we see a difference in convergence speed, and quite a considerable one. Where it took single Q-learning on average 1772 epochs, team Q-learning finished in 290 epochs. This comes down to a factor $\pm 6.1$ faster convergence. This is most probably due to the fact that... \textbf{REASONS!!!!}
+
+Second, the progression of the standard deviations (figures \ref{3a} and \ref{3b}) show interesting phenomena as well.
+
+Finally, let us look at the curves of the epochs themselves (figure \ref{fig:Results1})
