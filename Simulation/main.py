@@ -73,11 +73,10 @@ if __name__ == "__main__":
 
     # Simulation settings
     runs = 30
-    trainingSteps = 3000
-    testSteps = 1
-    epochs = trainingSteps + testSteps
+    epochs = 3000
 
     convergence = np.zeros((2, runs))
+    path = np.zeros((2, runs))
 
     for run in range(runs):
         print(run)
@@ -87,20 +86,14 @@ if __name__ == "__main__":
                   for i in range(numberOfAgents)]
 
         stdev = np.zeros((2, epochs))
-        testResults = np.zeros((2, testSteps))
         steps = np.zeros((2, epochs))
 
         startTau = 0.99
         tau = startTau
-        #for agent in agents:
-        #    agent.resetQ(world)
+
         for epoch in range(epochs):
-            if epoch == 0:
-                print("Training phase")
             if epoch % 500 == 0:
                 print(epoch)
-            if epoch == trainingSteps:
-                print("Testing phase")
 
             # Set the agents to their starting positions
             for agent in agents:
@@ -125,16 +118,15 @@ if __name__ == "__main__":
                 world = updateWorld(agents, world, steps, epoch)
 
                 # Update the Q-values of the agents
-                if epoch < trainingSteps:
-                    [agent.updateQ(alpha, gamma) for agent in agents]
+                [agent.updateQ(alpha, gamma) for agent in agents]
 
-                if epoch == epochs - 1:
-                    world.print_map()
+#                if epoch == epochs - 1:
+#                    world.print_map()
 
             tau -= (startTau-0.1) / epochs
 
             # Store the standard deviations
-            if epoch >= 20 and epoch < trainingSteps + 1:
+            if epoch >= 20:
                 stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
                 stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
 
@@ -142,8 +134,11 @@ if __name__ == "__main__":
                 if environment == "complex":
                     if stdev[0][epoch] < 7 and convergence[0][run] == 0:
                         convergence[0][run] = epoch
+                        path[0][run] = statistics.mean(steps[0][(epoch-20):epoch])
                     if stdev[1][epoch] < 2 and convergence[1][run] == 0:
                         convergence[1][run] = epoch
+                        path[1][run] = statistics.mean(steps[1][(epoch-20):epoch])
+
 
     for index, agent in enumerate(agents):
         print("Agent: ", index)
@@ -151,19 +146,15 @@ if __name__ == "__main__":
 
     with open("Convergence_single.csv", "w") as conv:
         writer = csv.writer(conv, delimiter='\t')
-        writer.writerow(["Not_grabbed\tGrabbed"])
+        writer.writerow(["Not_grabbed", "Grabbed"])
         writer.writerows(list(zip(convergence[0], convergence[1])))
 
-    plt.figure(1)
-    plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
-    plt.title('Standard deviation over 20 epochs')
-    plt.xlabel('Epoch')
-    plt.ylabel('Standard deviation')
-    plt.legend(['Not grasped', 'Grasped'])
-    plt.draw()
-    plt.savefig('Stdev_single.png')
+    with open("Path_single.csv", "w") as p:
+        writer = csv.writer(p, delimiter='\t')
+        writer.writerow(["Not_grabbed", "Grabbed"])
+        writer.writerows(list(zip(path[0], path[1])))
 
-    plt.figure(2)
+    plt.figure(1)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
     plt.title('Steps per epoch')
     plt.xlabel('Epoch')
@@ -172,7 +163,7 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('SingleQ.png')
 
-    plt.figure(3)
+    plt.figure(2)
     smooth = math.ceil(epochs * 0.1)
     plt.plot(
         range(epochs-smooth+1),
@@ -189,37 +180,27 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('SingleQ_smoothed.png')
 
-    testResults[0] = steps[0,-testSteps:]
-    testResults[1] = steps[1,-testSteps:]
-    plt.figure(4)
+    plt.figure(3)
     plt.plot(
-        range(testSteps), testResults[0], 'r-',
-        range(testSteps), testResults[1], 'b-')
-    plt.title('Steps per epoch (Only the last %s)'%testSteps)
-    plt.xlabel('Epoch')
+        range(runs), path[0], 'r-',
+        range(runs), path[1], 'b-')
+    plt.title('Mean number of steps at convergence')
+    plt.xlabel('Run')
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('SingleQTest.png')
+    plt.savefig('Path_single.png')
+
+    plt.figure(4)
+    plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
+    plt.title('Standard deviation over 20 epochs')
+    plt.xlabel('Epoch')
+    plt.ylabel('Standard deviation')
+    plt.legend(['Not grasped', 'Grasped'])
+    plt.draw()
+    plt.savefig('Stdev_single.png')
 
     plt.figure(5)
-    smooth = math.ceil(testSteps * 0.1)
-    plt.plot(
-        range(testSteps-smooth+1),
-        np.convolve(testResults[0], np.ones(smooth)/smooth, 'valid'),
-        'r-',
-        range(testSteps-smooth+1),
-        np.convolve(testResults[1], np.ones(smooth)/smooth, 'valid'),
-        'b-'
-    )
-    plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
-    plt.xlabel('Epoch')
-    plt.ylabel('Steps')
-    plt.legend(['Not grasped', 'Grasped'])
-    plt.draw()
-    plt.savefig('SingleQTest_smoothed.png')
-
-    plt.figure(6)
     plt.plot(range(runs), convergence[0], 'r-', range(runs), convergence[1], 'b-')
     plt.title('Number of epochs before convergence')
     plt.xlabel('Run')

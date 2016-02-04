@@ -75,12 +75,11 @@ if __name__ == "__main__":
     world.print_map()
 
     # Simulation settings
-    runs = 1
-    trainingSteps = 3000
-    testSteps = 1
-    epochs = trainingSteps + testSteps
+    runs = 30
+    epochs = 3000
 
     convergence = np.zeros((2, runs))
+    path = np.zeros((2, runs))
 
     for run in range(runs):
         print(run)
@@ -89,19 +88,14 @@ if __name__ == "__main__":
         agents = [ag.Agent(start, rows, columns, len(start))]
 
         stdev = np.zeros((2, epochs))
-        testResults = np.zeros((2, testSteps))
         steps = np.zeros((2, epochs))
 
         startTau = 0.99
         tau = startTau
 
         for epoch in range(epochs):
-            if epoch == 0:
-                print("Training phase")
             if (epoch % 500 == 0):
                 print(epoch)
-            if epoch == trainingSteps:
-                print("Testing phase")
 
             # Set the agents to their starting positions
             for agent in agents:
@@ -129,13 +123,12 @@ if __name__ == "__main__":
                 world = updateWorld(agents, world, steps, epoch)
 
                 # Update the Q-values of the agents
-                if epoch < trainingSteps:
-                    [agent.updateQ(alpha, gamma) for agent in agents]
+                [agent.updateQ(alpha, gamma) for agent in agents]
 
             tau -= (startTau-0.1) / epochs
 
             # Store the standard deviations
-            if epoch >= 20 and epoch < trainingSteps + 1:
+            if epoch >= 20:
                 stdev[0][epoch] = statistics.stdev(steps[0][(epoch-20):epoch])
                 stdev[1][epoch] = statistics.stdev(steps[1][(epoch-20):epoch])
 
@@ -143,13 +136,20 @@ if __name__ == "__main__":
                 if environment == "complex":
                     if stdev[0][epoch] < 7 and convergence[0][run] == 0:
                         convergence[0][run] = epoch
+                        path[0][run] = statistics.mean(steps[0][(epoch-20):epoch])
                     if stdev[1][epoch] < 2 and convergence[1][run] == 0:
                         convergence[1][run] = epoch
+                        path[1][run] = statistics.mean(steps[1][(epoch-20):epoch])
 
     with open("Convergence_team.csv", "w") as conv:
         writer = csv.writer(conv, delimiter='\t')
         writer.writerow(["Not_grabbed\tGrabbed"])
         writer.writerows(list(zip(convergence[0], convergence[1])))
+
+    with open("Path_team.csv", "w") as p:
+        writer = csv.writer(p, delimiter='\t')
+        writer.writerow(["Not_grabbed", "Grabbed"])
+        writer.writerows(list(zip(path[0], path[1])))
 
     plt.figure(1)
     plt.plot(range(epochs), steps[0], 'r-', range(epochs), steps[1], 'b-')
@@ -177,38 +177,18 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('TeamQ_smoothed.png')
 
-    testResults[0] = steps[0,-testSteps:]
-    testResults[1] = steps[1,-testSteps:]
-
     plt.figure(3)
     plt.plot(
-        range(testSteps), testResults[0], 'r-',
-        range(testSteps), testResults[1], 'b-')
-    plt.title('Steps per epoch (Only the last %s)'%testSteps)
-    plt.xlabel('Epoch')
+        range(runs), path[0], 'r-',
+        range(runs), path[1], 'b-')
+    plt.title('Mean number of steps at convergence')
+    plt.xlabel('Run')
     plt.ylabel('Steps')
     plt.legend(['Not grasped', 'Grasped'])
     plt.draw()
-    plt.savefig('TeamQTest.png')
+    plt.savefig('Path_team.png')
 
     plt.figure(4)
-    smooth = math.ceil(testSteps * 0.1)
-    plt.plot(
-        range(testSteps-smooth+1),
-        np.convolve(testResults[0], np.ones(smooth)/smooth, 'valid'),
-        'r-',
-        range(testSteps-smooth+1),
-        np.convolve(testResults[1], np.ones(smooth)/smooth, 'valid'),
-        'b-'
-    )
-    plt.title('Steps per epoch (smoothed for window = %s)'%smooth)
-    plt.xlabel('Epoch')
-    plt.ylabel('Steps')
-    plt.legend(['Not grasped', 'Grasped'])
-    plt.draw()
-    plt.savefig('TeamQTest_smoothed.png')
-
-    plt.figure(5)
     plt.plot(range(epochs), stdev[0], 'r-', range(epochs), stdev[1], 'b-')
     plt.title('Standard deviation over 20 epochs')
     plt.xlabel('Epoch')
@@ -217,7 +197,7 @@ if __name__ == "__main__":
     plt.draw()
     plt.savefig('Stdev_team.png')
 
-    plt.figure(6)
+    plt.figure(5)
     plt.plot(range(runs), convergence[0], 'r-', range(runs), convergence[1], 'b-')
     plt.title('Number of epochs before convergence')
     plt.xlabel('Run')
