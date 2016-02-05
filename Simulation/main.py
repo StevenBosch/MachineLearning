@@ -72,7 +72,7 @@ if __name__ == "__main__":
     world.add_objects()
 
     # Simulation settings
-    runs = 30
+    runs = 1
     epochs = 3000
 
     convergence = np.zeros((2, runs))
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         tau = startTau
 
         for epoch in range(epochs):
-            if epoch % 500 == 0:
+            if epoch % 100 == 0:
                 print(epoch)
 
             # Set the agents to their starting positions
