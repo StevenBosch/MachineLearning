@@ -29,9 +29,9 @@ Figure \ref{fig:Results1} shows the number of steps taken per epoch by two agent
 
 
 \subsection{Speed of convergence}
-To measure the speed of convergence we used as a convergence criterion that the standard deviation of 20 consecutive epochs be smaller than a set value.\footnote{For these results $\sigma_{not grabbed} < 7$ and $\sigma_{grabbed} < 2$.} Figures \ref{3a} and \ref{3b} show the standard deviations for both the single and team learning algorithm. The simulation was run 30 times per learning algorithm and every run the number of epochs it took to reach the convergence criterion was counted. Figures \ref{3c} and \ref{3d} show the results of these counts per condition (grabbed or not grabbed).
+To measure the speed of convergence we used as a convergence criterion that the standard deviation of 20 consecutive epochs be smaller than a set value.\footnote{For these results $\sigma_{not grasped} < 7$ and $\sigma_{grasped} < 2$.} Figures \ref{3a} and \ref{3b} show the standard deviations for both the single and team learning algorithm. The simulation was run 30 times per learning algorithm and every run the number of epochs it took to reach the convergence criterion was counted. Figures \ref{3c} and \ref{3d} show the results of these counts per condition (grasped or not grasped).
 
-To test whether the difference was significant we performed an unpaired t-test on the not grabbed, grabbed and summed results. Given a 95 percent confidence interval the t-test tested significant for the not grabbed samples with $m_{single} \approx 2609$ and $m_{team} \approx 2512$: $t(44.223) = 2.8123$, $p < 0.05$. It tested highly significant for the grabbed samples, with $m_{single} = 1772$ and $m_{team} = 290.4$: $t(52.353) = 14.032$, $p<0.001$. Finally, the t-test tested highly significant for the added results, with $m_{single} \approx 4381$ and $m_{team} \approx 2802$: $t(49.721) = 14.672$, $p < 0.001$. 
+To test whether the difference was significant we performed an unpaired t-test on the not grabbed, grasped and summed results. Given a 95 percent confidence interval the t-test tested significant for the not grasped samples with $m_{single} \approx 2609$ and $m_{team} \approx 2512$: $t(44.223) = 2.8123$, $p < 0.05$. It tested highly significant for the grasped samples, with $m_{single} = 1772$ and $m_{team} = 290.4$: $t(52.353) = 14.032$, $p<0.001$. Finally, the t-test tested highly significant for the added results, with $m_{single} \approx 4381$ and $m_{team} \approx 2802$: $t(49.721) = 14.672$, $p < 0.001$. 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.48\textwidth}
@@ -49,38 +49,38 @@ To test whether the difference was significant we performed an unpaired t-test o
 	\begin{subfigure}{.48\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{images/Convergence_notgrabbed.png}
-		\caption{Not grabbed}
+		\caption{Not grasped}
 		\label{3c}		
 	\end{subfigure}
 	\begin{subfigure}{0.48\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{images/Convergence_grabbed.png}
-		\caption{Grabbed}
+		\caption{Grasped}
 		\label{3d}		
 	\end{subfigure}
 	\caption{(a and b) Standard deviation over 20 epochs in a run of 3000 epochs. (c and d) Epochs before convergence.}
 	\label{fig:Results3}
 \end{figure}
 
-From these results we can conclude that single Q-learning is converged slightly faster when the block is not grabbed, but considerably slower when the block is grabbed. In total this results in the team Q-learning being quite faster overall, with an average difference of approximately 1597 epochs. Note that this difference is taken over the sum of the epochs for grabbed and not grabbed samples. Since the algorithms do both the grabbed and not grabbed part during one epoch, you might also consider just the difference between the samples with the highest number of epochs, which in both cases is the not grabbed one. This difference was still measured highly significant, but is much smaller: $\pm 97$ epochs.
+From these results we can conclude that single Q-learning converges slightly faster when the block is not grasped, but considerably slower when the block is grasped. In total this results in the team Q-learning being a bit faster overall, with an average difference of approximately 1597 epochs. Note that this difference is taken over the sum of the epochs for grasped and non-grasped samples. Since the algorithms perform both the grasped and not grasped part during one epoch, you might also consider just the difference between the samples with the highest number of epochs, which in both cases is the not-grasped one. This difference was still measured highly significant, but is much smaller: $\pm 97$ epochs.
 
 \subsection{Solution optimality}
-To determine how good the found solutions were, we calculated the average number of steps taken in the final twenty epochs that showed a standard deviation under the threshold value, as discussed in the previous section. Figure \ref{fig:Results4} shows the average number of steps taken in the grabbed and non grabbed scenario by both of the Q-learning algorithms.
+To determine how good the solutions we found were, we calculated the average number of steps taken in the final twenty epochs that showed a standard deviation under the threshold value, as discussed in the previous section. Figure \ref{fig:Results4} shows the average number of steps taken in the grasped and non-grasped scenario by both of the Q-learning algorithms.
 
-Again we performed an unpaired t-test on these results. This tested highly significant for the not grabbed samples with $m_{single} \approx 31.9$ and $m_{team} \approx 38.1$: $t(56.961) = -5.2118$, $p < 0.001$. For the grabbed samples the test did not test significantly with $m_{single} \approx 8.66$ and $m_{team} \approx 8.99$: $t(57.428) = -1.9165$, $p > 0.05$. Finally for the total number of steps the test tested highly significant with $m_{single} \approx 40.6$ and $m_{team} \approx 47.1$: $t(56.165) = -5.4113$, $p < 0.001$.
+Again we performed an unpaired t-test on these results. This tested highly significant for the non-grasped samples with $m_{single} \approx 31.9$ and $m_{team} \approx 38.1$: $t(56.961) = -5.2118$, $p < 0.001$. For the grasped samples the test did not test significantly with $m_{single} \approx 8.66$ and $m_{team} \approx 8.99$: $t(57.428) = -1.9165$, $p > 0.05$. Finally for the total number of steps the test tested highly significant with $m_{single} \approx 40.6$ and $m_{team} \approx 47.1$: $t(56.165) = -5.4113$, $p < 0.001$.
 
 \begin{figure}
 	\centering	
 	\begin{subfigure}{.48\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{images/Path_notgrabbed.png}
-		\caption{Not grabbed}
+		\caption{Not grasped}
 		\label{4c}		
 	\end{subfigure}
 	\begin{subfigure}{0.48\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{images/Path_grabbed.png}
-		\caption{Grabbed}
+		\caption{Grasped}
 		\label{4d}		
 	\end{subfigure}
 	\caption{Average number of time steps taken for the agents to solve the problem.}
